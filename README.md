@@ -95,6 +95,73 @@ The project can be debugged using:
 - ST-Link + GDB
 - Visual Studio Code with Cortex-Debug extension
 
+## Unit Testing
+
+The project includes a unit testing framework using Unity. Tests are built using MinGW GCC to run on the host machine.
+
+### Prerequisites
+
+- MSYS2 with UCRT64 environment
+- GCC and Make from MSYS2 UCRT64 (`C:/msys64/ucrt64/bin`)
+
+### Building and Running Tests
+
+```powershell
+# Verify MinGW Make is available
+Test-Path "C:/msys64/ucrt64/bin/mingw32-make.exe"
+
+# Clean and create build directory
+Remove-Item -Recurse -Force build_tests
+mkdir build_tests
+cd build_tests
+
+# Configure CMake with explicit compiler paths
+cmake -G "MinGW Makefiles" `
+    -DCMAKE_C_COMPILER="C:/msys64/ucrt64/bin/gcc.exe" `
+    -DCMAKE_CXX_COMPILER="C:/msys64/ucrt64/bin/g++.exe" `
+    -DCMAKE_MAKE_PROGRAM="C:/msys64/ucrt64/bin/mingw32-make.exe" `
+    -DBUILD_TESTS=ON ..
+
+# Build the tests
+cmake --build .
+
+# Run the tests
+cd tests
+./test_example.exe
+```
+
+### Adding New Tests
+
+1. Create a new test file in the `tests` directory
+2. Include Unity and required headers:
+   ```c
+   #include <stdio.h>      // For Unity output functions
+   #include "unity.h"      // Unity test framework
+   #include "your_header.h" // Header to test
+   ```
+3. Implement test cases following Unity's pattern:
+   ```c
+   void setUp(void) {
+       // Setup for each test
+   }
+
+   void tearDown(void) {
+       // Cleanup after each test
+   }
+
+   void test_your_function(void) {
+       // Your test code
+       TEST_ASSERT_EQUAL(expected, actual);
+   }
+
+   int main(void) {
+       UNITY_BEGIN();
+       RUN_TEST(test_your_function);
+       return UNITY_END();
+   }
+   ```
+4. Add the test to `tests/CMakeLists.txt` using the `add_unit_test()` function
+
 ## Contributing
 
 Feel free to submit issues and pull requests.
