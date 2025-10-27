@@ -17,7 +17,7 @@
 #ifndef FPU_H_
 #define FPU_H_
 
-#include "stm32f4xx.h"
+#include "std_types.h"
 
 /**
  * @brief Enable the Floating Point Unit
@@ -30,17 +30,5 @@
  *       typically before clock configuration and peripheral initialization.
  */
 void Fpu_Enable(void);
-
-/**
- * @def FPU_CCR_ASPEN_Pos
- * @brief Position of Automatic State Preservation Enable bit in CCR
- */
-#define FPU_CCR_ASPEN_Pos    (31U)
-
-/**
- * @def FPU_CCR_LSPEN_Pos
- * @brief Position of Lazy State Preservation Enable bit in CCR
- */
-#define FPU_CCR_LSPEN_Pos    (30U)
 
 #endif /* FPU_H_ */

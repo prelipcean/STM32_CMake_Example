@@ -7,8 +7,6 @@
  *                - Set the initial SP
  *                - Set the initial PC == Reset_Handler,
  *                - Set the vector table entries with the exceptions ISR address
- *                - Branches to main in the C library (which eventually
- *                  calls main()).
  ******************************************************************************
  * @attention
  *
@@ -46,7 +44,7 @@ defined in linker script */
  * @brief  This is the code that gets called when the processor first
  *          starts execution following a reset event. Only the absolutely
  *          necessary set is performed, after which the application
- *          supplied main() routine is called.
+ *          supplied Board_Init() routine is called.
  * @param  None
  * @retval : None
 */
@@ -96,7 +94,7 @@ LoopFillZerobss:
   bl __libc_init_array
 /* Call the application's entry point.*/
 
-  bl main
+  bl Board_Init
 
 LoopForever:
   b LoopForever

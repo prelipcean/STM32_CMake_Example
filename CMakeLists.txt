@@ -15,7 +15,7 @@ if(BUILD_TESTS)
     # Unit Tests Configuration
     # ===================================================================
     if(BUILD_TESTS)
-        add_subdirectory(tests)
+        add_subdirectory(Tests/UnitTests)
     endif()
 
 else()

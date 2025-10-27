@@ -7,7 +7,7 @@
 #ifndef REG_UTIL_H_
 #define REG_UTIL_H_
 
-#include <stdint.h>
+#include "std_types.h"
 
 /*===========================================================================*/
 /* Utility Macros                                                            */
@@ -186,22 +186,22 @@
 /*===========================================================================*/
 /* Example GPIO Pin Definitions                                              */
 /*===========================================================================*/
-#define GPIO_Pin_0 ((uint16_t)BIT(0))  /* Pin 0 selected */
-#define GPIO_Pin_1 ((uint16_t)BIT(1))  /* Pin 1 selected */
-#define GPIO_Pin_2 ((uint16_t)BIT(2))  /* Pin 2 selected */
-#define GPIO_Pin_3 ((uint16_t)BIT(3))  /* Pin 3 selected */
-#define GPIO_Pin_4 ((uint16_t)BIT(4))  /* Pin 4 selected */
-#define GPIO_Pin_5 ((uint16_t)BIT(5))  /* Pin 5 selected */
-#define GPIO_Pin_6 ((uint16_t)BIT(6))  /* Pin 6 selected */
-#define GPIO_Pin_7 ((uint16_t)BIT(7))  /* Pin 7 selected */
-#define GPIO_Pin_8 ((uint16_t)BIT(8))  /* Pin 8 selected */
-#define GPIO_Pin_9 ((uint16_t)BIT(9))  /* Pin 9 selected */
-#define GPIO_Pin_10 ((uint16_t)BIT(10)) /* Pin 10 selected */
-#define GPIO_Pin_11 ((uint16_t)BIT(11)) /* Pin 11 selected */
-#define GPIO_Pin_12 ((uint16_t)BIT(12)) /* Pin 12 selected */
-#define GPIO_Pin_13 ((uint16_t)BIT(13)) /* Pin 13 selected */
-#define GPIO_Pin_14 ((uint16_t)BIT(14)) /* Pin 14 selected */
-#define GPIO_Pin_15 ((uint16_t)BIT(15)) /* Pin 15 selected */
-#define GPIO_Pin_All ((uint16_t)0xFFFF) /* All pins selected */
+#define GPIO_Pin_0 ((uint16)BIT(0))  /* Pin 0 selected */
+#define GPIO_Pin_1 ((uint16)BIT(1))  /* Pin 1 selected */
+#define GPIO_Pin_2 ((uint16)BIT(2))  /* Pin 2 selected */
+#define GPIO_Pin_3 ((uint16)BIT(3))  /* Pin 3 selected */
+#define GPIO_Pin_4 ((uint16)BIT(4))  /* Pin 4 selected */
+#define GPIO_Pin_5 ((uint16)BIT(5))  /* Pin 5 selected */
+#define GPIO_Pin_6 ((uint16)BIT(6))  /* Pin 6 selected */
+#define GPIO_Pin_7 ((uint16)BIT(7))  /* Pin 7 selected */
+#define GPIO_Pin_8 ((uint16)BIT(8))  /* Pin 8 selected */
+#define GPIO_Pin_9 ((uint16)BIT(9))  /* Pin 9 selected */
+#define GPIO_Pin_10 ((uint16)BIT(10)) /* Pin 10 selected */
+#define GPIO_Pin_11 ((uint16)BIT(11)) /* Pin 11 selected */
+#define GPIO_Pin_12 ((uint16)BIT(12)) /* Pin 12 selected */
+#define GPIO_Pin_13 ((uint16)BIT(13)) /* Pin 13 selected */
+#define GPIO_Pin_14 ((uint16)BIT(14)) /* Pin 14 selected */
+#define GPIO_Pin_15 ((uint16)BIT(15)) /* Pin 15 selected */
+#define GPIO_Pin_All ((uint16)0xFFFF) /* All pins selected */
 
 #endif /* REG_UTIL_H_ */

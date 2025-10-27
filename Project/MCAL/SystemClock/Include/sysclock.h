@@ -19,9 +19,7 @@
 #ifndef SYSCLOCK_H_
 #define SYSCLOCK_H_
 
-// Status values for function returns
-#define E_OK     (0U)  /* Function completed successfully */
-#define E_NOT_OK (1U)  /* Function completed with error */
+#include "std_types.h"
 
 /**
  * @brief Configures the system clock source, PLL, and bus prescalers.

@@ -10,6 +10,18 @@
 #include "fpu.h"
 
 /**
+ * @def FPU_CCR_ASPEN_Pos
+ * @brief Position of Automatic State Preservation Enable bit in CCR
+ */
+#define FPU_CCR_ASPEN_Pos    (31U)
+
+/**
+ * @def FPU_CCR_LSPEN_Pos
+ * @brief Position of Lazy State Preservation Enable bit in CCR
+ */
+#define FPU_CCR_LSPEN_Pos    (30U)
+
+/**
  * @brief Enable the Floating Point Unit
  * @details This function enables the FPU by setting CP10 and CP11 to full access in the
  *          Coprocessor Access Control Register (CPACR). Once enabled, the FPU will be
