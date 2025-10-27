@@ -49,7 +49,7 @@
 /**
  * @brief Lock flag to prevent clock reconfiguration during critical operations
  */
-static volatile uint8_t clockConfigLock = 0;
+static volatile uint8 clockConfigLock = 0;
 
 // ============================================================================
 // CLOCK LIMITS (STM32F42x/43x)
@@ -65,10 +65,10 @@ static volatile uint8_t clockConfigLock = 0;
  * @brief Get the current SYSCLK frequency in Hz
  * @return Current SYSCLK frequency in Hz
  */
-uint32_t SysClock_GetSYSCLK(void)
+uint32 SysClock_GetSYSCLK(void)
 {
-  uint32_t sysclk = 0;
-  uint32_t source = RCC->CFGR & RCC_CFGR_SWS;
+  uint32 sysclk = 0;
+  uint32 source = RCC->CFGR & RCC_CFGR_SWS;
   
   switch (source)
   {
@@ -94,10 +94,10 @@ uint32_t SysClock_GetSYSCLK(void)
  * @brief Get the current HCLK frequency in Hz
  * @return Current HCLK frequency in Hz
  */
-uint32_t SysClock_GetHCLK(void)
+uint32 SysClock_GetHCLK(void)
 {
-  uint32_t presc = (RCC->CFGR & RCC_CFGR_HPRE) >> 4;
-  uint32_t hclk = SysClock_GetSYSCLK();
+  uint32 presc = (RCC->CFGR & RCC_CFGR_HPRE) >> 4;
+  uint32 hclk = SysClock_GetSYSCLK();
   
   if (presc & 0x8)
   {
@@ -112,10 +112,10 @@ uint32_t SysClock_GetHCLK(void)
  * @brief Get the current PCLK1 (APB1) frequency in Hz
  * @return Current PCLK1 frequency in Hz
  */
-uint32_t SysClock_GetPCLK1(void)
+uint32 SysClock_GetPCLK1(void)
 {
-  uint32_t presc = (RCC->CFGR & RCC_CFGR_PPRE1) >> 10;
-  uint32_t pclk1 = SysClock_GetHCLK();
+  uint32 presc = (RCC->CFGR & RCC_CFGR_PPRE1) >> 10;
+  uint32 pclk1 = SysClock_GetHCLK();
   
   if (presc & 0x4)
   {
@@ -130,10 +130,10 @@ uint32_t SysClock_GetPCLK1(void)
  * @brief Get the current PCLK2 (APB2) frequency in Hz
  * @return Current PCLK2 frequency in Hz
  */
-uint32_t SysClock_GetPCLK2(void)
+uint32 SysClock_GetPCLK2(void)
 {
-  uint32_t presc = (RCC->CFGR & RCC_CFGR_PPRE2) >> 13;
-  uint32_t pclk2 = SysClock_GetHCLK();
+  uint32 presc = (RCC->CFGR & RCC_CFGR_PPRE2) >> 13;
+  uint32 pclk2 = SysClock_GetHCLK();
   
   if (presc & 0x4)
   {
@@ -150,15 +150,15 @@ uint32_t SysClock_GetPCLK2(void)
  * This variable is used by SysTick_Config() and other HAL/LL functions.
  * It MUST be updated whenever the core clock changes.
  */
-uint32_t SystemCoreClock = HSE_VALUE;
+uint32 SystemCoreClock = HSE_VALUE;
 
-static volatile uint32_t timeout = OSC_STARTUP_TIMEOUT;
+static volatile uint32 timeout = OSC_STARTUP_TIMEOUT;
 
 /**
  * @brief Configures the system clock source, PLL, and bus prescalers.
- * @return uint8_t E_OK (0) if configuration succeeds, E_NOT_OK (1) if it fails (e.g., oscillator timeout)
+ * @return uint8 E_OK (0) if configuration succeeds, E_NOT_OK (1) if it fails (e.g., oscillator timeout)
  */
-uint8_t SysClock_Setup(void)
+uint8 SysClock_Setup(void)
 {
   /* 1. Define peripheral pointers */
   RCC_TypeDef *pRCC = RCC;
@@ -375,9 +375,9 @@ uint8_t SysClock_Setup(void)
  */
 void SysClock_UpdateSystemCoreClock(void)
 {
-  uint32_t pllm = 0, plln = 0, pllp = 0;
-  uint32_t sysclk = 0;
-  uint32_t src = 0;
+  uint32 pllm = 0, plln = 0, pllp = 0;
+  uint32 sysclk = 0;
+  uint32 src = 0;
 
   /* Get SYSCLK source */
   src = RCC->CFGR & RCC_CFGR_SWS;
@@ -410,7 +410,7 @@ void SysClock_UpdateSystemCoreClock(void)
   }
 
   /* HCLK = SYSCLK / AHB prescaler */
-  uint32_t ahbpre = (RCC->CFGR & RCC_CFGR_HPRE) >> 4;
+  uint32 ahbpre = (RCC->CFGR & RCC_CFGR_HPRE) >> 4;
   if (ahbpre & 0x08) {
     ahbpre = (0x10U << (ahbpre & 0x07)) >> 1;
     sysclk /= ahbpre;

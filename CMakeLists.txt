@@ -44,25 +44,24 @@ else()
     set(EXECUTABLE ${CMAKE_PROJECT_NAME})
 
     # MCU-specific files (relative to this CMakeLists.txt)
-    set(STARTUP_FILE ${CMAKE_CURRENT_SOURCE_DIR}/startup_stm32f429zitx.s)
-    set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/STM32F429ZITX_FLASH.ld)
+    set(STARTUP_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Project/Board/STM32F429ZI/startup/startup_stm32f429zitx.s)
+    set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/Project/Board/STM32F429ZI/linker/STM32F429ZITX_FLASH.ld)
 
     # --- Define Your Source and Include Files Here ---
     # Add all your .c/.cpp source files here
     set(PROJECT_SOURCES
-        Application/Source/main.c
-        Application/Source/syscalls.c
-        Application/Source/sysmem.c
-        Application/Source/sysclock.c
-        Application/Source/fpu.c
+        Project/MCAL/FPU/Source/fpu.c
+        Project/MCAL/SystemClock/Source/sysclock.c
+        Project/Board/STM32F429ZI/board.c
     )
 
     # Add all your include directories here
     set(PROJECT_INCLUDE_DIRS
-        CMSIS/Device/ST/STM32F4xx/Include
-        CMSIS/Include
-        # Add other include directories...
-        Application/Include
+        Project/CMSIS/Device/ST/STM32F4xx/Include
+        Project/CMSIS/Include
+        Project/Utilities/Include
+        Project/MCAL/FPU/Include
+        Project/MCAL/SystemClock/Include
     )
     # --- End of File Definitions ---
 
@@ -97,11 +96,13 @@ else()
 
     # --- Common Flags for all compilers ---
     set(COMMON_FLAGS
-        --specs=nano.specs
-        -Wall                 # Enable all warnings
-        -ffunction-sections   # Place each function in its own section
-        -fdata-sections       # Place each data item in its own section
-        -fstack-usage         # Generate stack usage information
+        -nostdlib            # Don't use standard system startup files or libraries
+        -nodefaultlibs      # Don't use standard system libraries
+        -fno-builtin        # Don't recognize built-in functions
+        -Wall               # Enable all warnings
+        -ffunction-sections # Place each function in its own section
+        -fdata-sections     # Place each data item in its own section
+        -fstack-usage       # Generate stack usage information
     )
 
     # --- Preprocessor Definitions ---
@@ -183,15 +184,11 @@ else()
     target_link_options(${EXECUTABLE} PRIVATE
         ${CPU_FLAGS}
         ${COMMON_FLAGS}
-        -T${LINKER_SCRIPT} # Linker script
-        --specs=nosys.specs # Minimal implementation of system calls
-        -Wl,-Map=${EXECUTABLE}.map # Generate map file
-        -Wl,--gc-sections # Discard unused sections
-        -static
-        -Wl,--start-group # Link C and Math libraries
-        -lc
-        -lm
-        -Wl,--end-group
+        -T${LINKER_SCRIPT}           # Linker script
+        -nostartfiles                # Don't use standard system startup files
+        -Wl,-Map=${EXECUTABLE}.map   # Generate map file
+        -Wl,--gc-sections           # Discard unused sections
+        -Wl,--print-memory-usage    # Print memory usage summary
     )
 
     # ===================================================================
