@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include "stm32f4xx.h"
 #include "fpu.h"
 #include "sysclock.h"
