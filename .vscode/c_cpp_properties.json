@@ -10,6 +10,7 @@
         "${workspaceFolder}/Project/CMSIS/Include",
         "${workspaceFolder}/Project/Utilities/Include",
         "${workspaceFolder}/Project/MCAL/FPU/Include",
+        "${workspaceFolder}/Project/MCAL/NVIC/Include",
         "${workspaceFolder}/Project/MCAL/SystemClock/Include",
         "${workspaceFolder}/Project/MCAL/GPIO/Include",
         "${workspaceFolder}/Project/MCAL/SysCfgCtrl/Include",

@@ -11,8 +11,10 @@
  * List of header files required by this source file
  ******************************************************************************/
 #include "stm32f4xx.h"
-#include "gpio.h"
 #include "reg_util.h"
+#include "gpio.h"
+#include "syscfgctrl.h"
+#include "nvic.h"
 
 /******************************************************************************
  * MACRO DEFINITIONS
@@ -41,6 +43,16 @@
  * @brief Mask for 4 bits per pin in AFRL/H register
  */
 #define GPIO_AFR_MASK          (0x0FU)
+
+#define GPIO_PIN_TO_IRQN(pin)                                                                                          \
+  ((pin == 0)                 ? EXTI0_IRQn                                                                             \
+   : (pin == 1)               ? EXTI1_IRQn                                                                             \
+   : (pin == 2)               ? EXTI2_IRQn                                                                             \
+   : (pin == 3)               ? EXTI3_IRQn                                                                             \
+   : (pin == 4)               ? EXTI4_IRQn                                                                             \
+   : (pin >= 5 && pin <= 9)   ? EXTI9_5_IRQn                                                                           \
+   : (pin >= 10 && pin <= 15) ? EXTI15_10_IRQn                                                                         \
+                              : 0xFEU)
 
 /******************************************************************************
  * TYPE DEFINITIONS
@@ -93,7 +105,7 @@
  */
 void GPIO_Init(GPIO_TypeDef *GPIOx, const GPIO_PinConfig_T *pinConfig)
 {
-  uint8 l_afrIndex_u8;    /* In dex 0 or 1 which indicates AFRL or AFRH */
+  uint8 l_afrIndex_u8;    /* Index 0 or 1 which indicates AFRL or AFRH */
   uint8 l_afrPosition_u8; /* Position of the alternate function bits */
 
   /* Configure the pin mode */
@@ -262,6 +274,64 @@ void GPIO_LockPin(GPIO_TypeDef *GPIOx, uint8 pinNumber)
   (void)GPIOx->LCKR; // Step 4: Read LCKR register (dummy read)
 }
 
+/**
+ * @brief       Configures a GPIO pin to generate an interrupt on a specified event.
+ * @note        This function sets up the EXTI line for the specified pin and
+ *              configures the NVIC for the corresponding interrupt.
+ * @param[in]   GPIOx Pointer to the GPIO peripheral base address (e.g., GPIOA).
+ * @param[in]   pinConfig Pointer to a GPIO_PinConfig_T structure that contains
+ *              the configuration information for the specified pin.
+ * @param[in]   Priority The priority level for the interrupt.
+ * @retval      None
+ */
+void GPIO_SetPinInterrupt(GPIO_TypeDef *GPIOx, const GPIO_PinConfig_T *pinConfig, uint8 Priority)
+{
+  uint8 l_extiLine_u8;
+
+  /* 1. Configure SYSCFG */
+  /* 1.1 Enable the clock for SYSCFG */
+  SYSCFGCTRL_CLOCK_ENABLE();
+  /* 1.2 Select the source (GPIO pin) for the respective EXTI line */
+  SysCfgCtrl_SetExtiSource(GPIOx, pinConfig->pinNumber);
+
+  /* 2. Configure EXTI */
+  // ToDo move EXTI configuration to EXTI driver
+  /* 2.1 Select the edge trigger for the interrupt */
+  switch (pinConfig->edgeTrigger)
+  {
+  case GPIO_EXTI_RISING_EDGE:
+    EXTI->RTSR |= (1U << pinConfig->pinNumber);  /* Enable rising edge trigger */
+    EXTI->FTSR &= ~(1U << pinConfig->pinNumber); /* Disable falling edge trigger */
+    break;
+
+  case GPIO_EXTI_FALLING_EDGE:
+    EXTI->FTSR |= (1U << pinConfig->pinNumber);  /* Enable falling edge trigger */
+    EXTI->RTSR &= ~(1U << pinConfig->pinNumber); /* Disable rising edge trigger */
+    break;
+
+  case GPIO_EXTI_RISING_FALLING:
+    EXTI->RTSR |= (1U << pinConfig->pinNumber); /* Enable rising edge trigger */
+    EXTI->FTSR |= (1U << pinConfig->pinNumber); /* Enable falling edge trigger */
+    break;
+
+  default:
+    /* Invalid edge trigger configuration - handle error as needed */
+    return;
+  }
+  /* 2.2 Enable the EXTI line interrupt */
+  EXTI->IMR |= (1U << pinConfig->pinNumber);
+
+  /* 3. Configure NVIC */
+  l_extiLine_u8 = GPIO_PIN_TO_IRQN(pinConfig->pinNumber);
+
+  if (0xFE != l_extiLine_u8)
+  {
+    /* 3.1 Set the priority for the EXTI line interrupt */
+    NVICDriver_SetPriority(l_extiLine_u8, Priority);
+    /* 3.2 Enable the EXTI line interrupt in NVIC */
+    NVICDriver_EnableIRQ(l_extiLine_u8);
+  }
+}
 /******************************************************************************
  * End of File                                                                *
  ******************************************************************************/

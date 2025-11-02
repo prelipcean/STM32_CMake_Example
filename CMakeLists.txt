@@ -57,7 +57,8 @@ else()
   # --- Define Your Source and Include Files Here ---
   # Add all your .c/.cpp source files here
   set(PROJECT_SOURCES
-      Project/MCAL/FPU/Source/fpu.c 
+      Project/MCAL/FPU/Source/fpu.c
+      Project/MCAL/NVIC/Source/nvic.c
       Project/MCAL/SystemClock/Source/sysclock.c
       Project/MCAL/SysCfgCtrl/Source/syscfgctrl.c
       Project/MCAL/GPIO/Source/gpio.c
@@ -69,6 +70,7 @@ else()
       Project/CMSIS/Include
       Project/Utilities/Include
       Project/MCAL/FPU/Include
+      Project/MCAL/NVIC/Include
       Project/MCAL/SystemClock/Include
       Project/MCAL/GPIO/Include
       Project/MCAL/SysCfgCtrl/Include)

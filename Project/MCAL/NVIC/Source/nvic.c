@@ -1,8 +1,8 @@
 /******************************************************************************
- * @file                syscfgctrl.c
- * @brief
+ * @file                nvic.c
+ * @brief               
  *
- * @details
+ * @details             
  ******************************************************************************/
 
 /******************************************************************************
@@ -10,7 +10,8 @@
  * List of header files required by this source file
  ******************************************************************************/
 #include "stm32f4xx.h"
-#include "syscfgctrl.h"
+#include "core_cm4.h"
+#include "nvic.h"
 
 /******************************************************************************
  * MACRO DEFINITIONS
@@ -56,44 +57,35 @@
  * PUBLIC FUNCTIONS
  * Global function implementations
  ******************************************************************************/
-/**
- * @brief     Configures the source GPIO Port for a specific External Interrupt (EXTI) line.
- *
- *            The SYSCFG_EXTICR registers determine which GPIO pin (e.g., PA0, PB0, PC0)
- *            will trigger the EXTI line (EXTI0).
- *
- * @param     GPIOx The base address of the GPIO Port to use (e.g., GPIOA).
- * @param     exti_line The specific EXTI line number to configure (0 to 15).
- * @return    void
- */
-void SysCfgCtrl_SetExtiSource(void *GPIOx, uint8 exti_line)
+void NVICDriver_SetPriority(uint8 IRQn, uint8 priority)
 {
-  uint8 l_extiPortCode_u8;
-  uint8 l_exticrIndex_u8;
-  uint8 l_exticrPosition_u8;
-
-  // 1. Calculate the 4-bit port code using the macro
-  l_extiPortCode_u8   = SYSCFGCTRL_GET_EXTICR_PORT_CODE(GPIOx);
-
-  // 2. Calculate the register array index (0-3) and the bit position (0, 4, 8, 12)
-  //    Each EXTICR register handles 4 EXTI lines, and each line uses a 4-bit field.
-  l_exticrIndex_u8    = exti_line / 4U;
-  l_exticrPosition_u8 = (exti_line % 4U) * 4U; // 0, 4, 8, or 12
-
-  // Safety check for valid EXTI line index (optional, but good practice)
-  if (l_exticrIndex_u8 >= 4U)
+  /* Set the priority for the specified IRQ number */
+  if (IRQn < 240) // Valid IRQn range for STM32F4
   {
-    // Handle error, e.g., return an error code or print a debug message
-    return;
+    // Function from CMSIS to set priority
+    // Interrupt Priority Register (8Bit wide)
+    NVIC_SetPriority((IRQn_Type)IRQn, priority);
   }
+}
 
-  // 3. Perform the Read-Modify-Write operation on the SYSCFG EXTICR register
+void NVICDriver_EnableIRQ(uint8 IRQn)
+{
+  /* Enable the specified IRQ number */
+  if (IRQn < 240) // Valid IRQn range for STM32F4
+  {
+    // Function from CMSIS to enable IRQ
+    NVIC_EnableIRQ((IRQn_Type)IRQn);
+  }
+}
 
-  // Clear the existing 4-bit field (0x0F = 1111 binary)
-  SYSCFG->EXTICR[l_exticrIndex_u8] &= ~(0x0FU << l_exticrPosition_u8); // Clear bits
-
-  // Set the new 4-bit port code
-  SYSCFG->EXTICR[l_exticrIndex_u8] |= (l_extiPortCode_u8 << l_exticrPosition_u8); // Set bits
+void NVICDriver_DisableIRQ(uint8 IRQn)
+{
+  /* Disable the specified IRQ number */
+  if (IRQn < 240) // Valid IRQn range for STM32F4
+  {
+    // Function from CMSIS to disable IRQ
+    NVIC_DisableIRQ((IRQn_Type)IRQn);
+  }
 }
 
 /******************************************************************************

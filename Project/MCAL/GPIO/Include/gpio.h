@@ -152,6 +152,17 @@ typedef enum
 } GPIO_PinState_T;
 
 /**
+ * @brief GPIO EXTI Trigger Enumeration
+ * @details Enumeration for GPIO external interrupt trigger types
+ */
+typedef enum
+{
+  GPIO_EXTI_RISING_EDGE    = 0, /**< Trigger on rising edge */
+  GPIO_EXTI_FALLING_EDGE   = 1, /**< Trigger on falling edge */
+  GPIO_EXTI_RISING_FALLING = 2  /**< Trigger on both edges */
+} GPIO_EXTI_Trigger_T;
+
+/**
  * @brief GPIO Pin Configuration Structure
  * @details Structure containing all configuration parameters for a GPIO pin
  */
@@ -163,6 +174,7 @@ typedef struct
   uint8 speed;     /**< GPIO speed (low, medium, high, very high) @see GPIO_Speed */
   uint8 pull;      /**< GPIO pull-up/pull-down configuration @see GPIO_Pull */
   uint8 alternate; /**< GPIO alternate function (if applicable) @see GPIO_Alternate_Function */
+  uint8 edgeTrigger; /**< Edge trigger configuration for interrupts (rising, falling, both) */
 } GPIO_PinConfig_T;
 
 /******************************************************************************
@@ -190,6 +202,7 @@ void GPIO_WritePin(GPIO_TypeDef *GPIOx, uint8 pinNumber, GPIO_PinState_T value);
 uint8 GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint8 pinNumber);
 void GPIO_TogglePin(GPIO_TypeDef *GPIOx, uint8 pinNumber);
 void GPIO_LockPin(GPIO_TypeDef *GPIOx, uint8 pinNumber);
+void GPIO_SetPinInterrupt(GPIO_TypeDef *GPIOx, const GPIO_PinConfig_T *pinConfig, uint8 Priority);
 
 #ifdef __cplusplus
 }

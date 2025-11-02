@@ -34,13 +34,14 @@ STATIC const GPIO_PinConfig_T redLedConfig     = {.pinNumber = GPIO_PIN_NUM_14,
                                                   .pull      = GPIO_NO_PULL,
                                                   .alternate = GPIO_AF0};
 
-STATIC const GPIO_PinConfig_T blueButtonConfig = {.pinNumber = GPIO_PIN_NUM_0,
-                                                  .mode      = GPIO_MODE_INPUT,
-                                                  .type      = GPIO_OUTPUT_TYPE_PP,
-                                                  .speed     = GPIO_SPEED_LOW,
-                                                  .pull =
-                                                    GPIO_NO_PULL, /* Already pull down resistor present on board */
-                                                  .alternate = GPIO_AF0};
+STATIC const GPIO_PinConfig_T blueButtonConfig = {.pinNumber   = GPIO_PIN_NUM_0,
+                                                  .mode        = GPIO_MODE_INPUT,
+                                                  .type        = GPIO_OUTPUT_TYPE_PP,
+                                                  .speed       = GPIO_SPEED_LOW,
+                                                  /* Already pull down resistor present on board */
+                                                  .pull        = GPIO_NO_PULL,
+                                                  .alternate   = GPIO_AF0,
+                                                  .edgeTrigger = GPIO_EXTI_RISING_EDGE};
 
 int Board_Init(void)
 {
@@ -55,6 +56,8 @@ int Board_Init(void)
   /* Configure blue user button (PA0) */
   GPIOA_CLOCK_ENABLE();
   GPIO_Init(GPIOA, &blueButtonConfig);
+  /* Configure button interrupt */
+  GPIO_SetPinInterrupt(GPIOA, &blueButtonConfig, 5u); // Priority 5
 
   while (1)
   {
@@ -63,6 +66,7 @@ int Board_Init(void)
     /* Toggle green LED to indicate normal operation */
     GPIO_TogglePin(GPIOG, GREEN_LED_PIN);
 
+#if 0 /* Polling method / no debounce ! */
     if (1u == GPIO_ReadPin(GPIOA, BLUE_BUTTON_PIN))
     {
       /* If button is pressed, turn on red LED */
@@ -73,6 +77,7 @@ int Board_Init(void)
       /* If button is not pressed, turn off red LED */
       GPIO_WritePin(GPIOG, RED_LED_PIN, GPIO_PIN_LOW);
     }
+#endif
 
     /* Simple delay - about 0.5 second at 168MHz */
     for (volatile uint32_t i = 0; i < 5000000; i++);
@@ -161,4 +166,17 @@ void SystemInit(void)
 void SystemCoreClockUpdate(void)
 {
   SysClock_UpdateSystemCoreClock();
+}
+
+void EXTI0_IRQHandler(void)
+{
+  /* Check if EXTI line 0 is asserted */
+  if (EXTI->PR & (1U << BLUE_BUTTON_PIN))
+  {
+    /* Clear the EXTI line 0 pending bit */
+    EXTI->PR |= (1U << BLUE_BUTTON_PIN);
+
+    /* Toggle red LED on button press */
+    GPIO_TogglePin(GPIOG, RED_LED_PIN);
+  }
 }
