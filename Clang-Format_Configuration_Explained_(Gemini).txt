@@ -1,0 +1,1129 @@
+Clang-Format Configuration Explained
+
+This document explains every setting found in your .clang-format file.
+
+Language
+
+Your Value: Cpp
+
+What it does: Specifies the primary language to be formatted. This tells clang-format to use C++-specific rules.
+
+AccessModifierOffset
+
+Your Value: -2
+
+What it does: The offset (in spaces) for public:, private:, and protected: access modifiers. A negative value "outdents" or "hangs" them, placing them 2 spaces to the left of the current indentation level.
+
+AlignAfterOpenBracket
+
+Your Value: Align
+
+What it does: Controls alignment after an open bracket (, [ or {.
+
+Align: Aligns parameters with the open bracket.
+
+some_function(int a,
+              int b);
+
+
+AlignArrayOfStructures
+
+YourValue: None
+
+What it does: Controls alignment of fields in an array of struct literals. None means no special alignment is performed.
+
+AlignConsecutiveAssignments
+
+Your Value:
+
+Enabled: true
+
+AcrossEmptyLines: true
+
+AcrossComments: true
+
+AlignCompound: false
+
+AlignFunctionDeclarations: false
+
+AlignFunctionPointers: false
+
+PadOperators: true
+
+What it does: This group aligns consecutive assignment operators (=).
+
+Enabled: true: Turns this feature on.
+
+AcrossEmptyLines: true: Keeps alignment even across blank lines.
+
+AcrossComments: true: Keeps alignment even across comments.
+
+AlignCompound: false: Does not align compound assignments (e.g., +=, -=).
+
+AlignFunctionDeclarations: false: Does not align assignments in function declarations.
+
+AlignFunctionPointers: false: Does not align function pointer assignments.
+
+PadOperators: true: Adds spaces to the left of the operator to align, not just the right.
+
+int a   = 1;
+int bbb = 2; // 'true' pads before '='
+
+
+AlignConsecutiveBitFields
+
+Your Value:
+
+Enabled: true
+
+AcrossEmptyLines: true
+
+AcrossComments: true
+
+AlignCompound: false
+
+AlignFunctionDeclarations: false
+
+AlignFunctionPointers: false
+
+PadOperators: false
+
+What it does: This group aligns consecutive bit-field colons (:).
+
+Enabled: true: Turns this feature on.
+
+AcrossEmptyLines: true: Keeps alignment even across blank lines.
+
+AcrossComments: true: Keeps alignment even across comments.
+
+PadOperators: false: Aligns the colons without padding spaces before them.
+
+AlignConsecutiveDeclarations
+
+Your Value:
+
+Enabled: false
+
+AcrossEmptyLines: false
+
+AcrossComments: false
+
+AlignCompound: false
+
+AlignFunctionDeclarations: true
+
+AlignFunctionPointers: false
+
+PadOperators: false
+
+What it does: This group aligns consecutive variable declarations.
+
+Enabled: false: This feature is disabled for regular variables.
+
+AlignFunctionDeclarations: true: This independently enables alignment for consecutive function declarations.
+
+AlignConsecutiveMacros
+
+Your Value:
+
+Enabled: true
+
+AcrossEmptyLines: true
+
+AcrossComments: true
+
+What it does: This group aligns consecutive macro definitions (#define).
+
+Enabled: true: Turns this feature on.
+
+AcrossEmptyLines: true: Keeps alignment even across blank lines.
+
+AcrossComments: true: Keeps alignment even across comments.
+
+#define SHORT_NAME  1
+#define LONGER_NAME 2
+
+
+AlignConsecutiveShortCaseStatements
+
+Your Value: Enabled: false
+
+What it does: When Enabled: true, it would align the statements in consecutive short case blocks. You have this disabled.
+
+(Note: The AlignConsecutiveTableGen... settings are specific to LLVM's TableGen domain-specific language and are all disabled in your file.)
+
+AlignEscapedNewlines
+
+Your Value: Right
+
+What it does: Controls how to align backslashes (\) for escaped newlines (e.g., in macros).
+
+Right: Aligns them to the rightmost column (ColumnLimit).
+
+AlignOperands
+
+Your Value: Align
+
+What it does: Controls alignment of operands in binary expressions.
+
+Align: Aligns operands vertically.
+
+int x = a +
+        b +
+        c;
+
+
+AlignTrailingComments
+
+Your Value:
+
+Kind: Always
+
+OverEmptyLines: 0
+
+What it does: Controls the alignment of trailing comments (e.g., // comment).
+
+Kind: Always: Always attempts to align consecutive trailing comments.
+
+OverEmptyLines: 0: Does not align comments that are separated by empty lines.
+
+AllowAllArgumentsOnNextLine
+
+Your Value: true
+
+What it does: If a function call doesn't fit on one line, this allows all arguments to be put on the next line, even if the first one fits.
+
+AllowAllParametersOfDeclarationOnNextLine
+
+Your Value: true
+
+What it does: Similar to the above, but for function declarations.
+
+AllowBreakBeforeNoexceptSpecifier
+
+Your Value: Never
+
+What it does: Never allows a line break between a function's parameter list and its noexcept specifier.
+
+AllowShortBlocksOnASingleLine
+
+Your Value: Never
+
+What it does: Never collapses blocks (e.g., { return 0; }) onto a single line.
+
+AllowShortCaseExpressionOnASingleLine
+
+Your Value: true
+
+What it does: Allows a case statement with a single, short expression to be on one line (e.g., case 1: return;).
+
+AllowShortCaseLabelsOnASingleLine
+
+Your Value: false
+
+What it does: Does not allow case X: labels to be on the same line as the switch statement.
+
+AllowShortCompoundRequirementOnASingleLine
+
+Your Value: true
+
+What it does: In C++ concepts, allows short compound requirements to be on one line (e.g., { x.foo() } -> std::same_as<int>;).
+
+AllowShortEnumsOnASingleLine
+
+Your Value: false
+
+What it does: Does not collapse short enum definitions onto a single line.
+
+AllowShortFunctionsOnASingleLine
+
+Your Value: None
+
+What it does: Never collapses short function definitions onto a single line.
+
+AllowShortIfStatementsOnASingleLine
+
+Your Value: Never
+
+What it does: Never collapses short if statements without braces onto a single line.
+
+AllowShortLambdasOnASingleLine
+
+Your Value: All
+
+What it does: Allows short lambdas of all kinds (with or without braces, empty or not) to be formatted on a single line.
+
+AllowShortLoopsOnASingleLine
+
+YourValue: true
+
+What it does: Allows short for and while loops to be on a single line (e.Example: while (true) continue;).
+
+AllowShortNamespacesOnASingleLine
+
+Your Value: false
+
+What it does: Does not collapse short namespace definitions onto a single line.
+
+AlwaysBreakAfterDefinitionReturnType
+
+Your Value: None
+
+What it does: Never forces a line break after the return type of a function definition.
+
+AlwaysBreakBeforeMultilineStrings
+
+Your Value: false
+
+What it does: Does not force a line break before a multi-line string literal.
+
+AttributeMacros
+
+Your Value: [ __capability ]
+
+What it does: A list of macro names that should be treated like attributes (e.g., [[deprecated]]).
+
+BinPackArguments
+
+Your Value: true
+
+What it does: Tries to pack as many function arguments as possible onto each line (respecting ColumnLimit) instead of putting each on a new line.
+
+BinPackLongBracedList
+
+YourValue: true
+
+What it does: Tries to pack elements in a long braced list (e.g., an array initialization) onto as few lines as possible.
+
+BinPackParameters
+
+Your Value: BinPack
+
+What it does: Tries to pack as many function parameters as possible onto each line in a function declaration.
+
+BitFieldColonSpacing
+
+Your Value: Both
+
+What it does: Adds a space on both sides of the colon in a bit-field declaration (e.g., unsigned a : 1;).
+
+BracedInitializerIndentWidth
+
+Your Value: -1
+
+What it does: A value of -1 means the indent width for braced initializers is not set explicitly and will default to ContinuationIndentWidth (which you have set to 2).
+
+BraceWrapping
+
+Your Value: (Multiple sub-settings)
+
+What it does: This group controls where to put braces ({ and }).
+
+AfterCaseLabel: false: Does not force a brace after a case label.
+
+AfterClass: true: Puts the { for a class definition on a new line (Allman style).
+
+AfterControlStatement: Always: Always puts the { for if, else, for, while on a new line.
+
+AfterEnum: true: Puts the { for an enum on a new line.
+
+AfterExternBlock: true: Puts the { for an extern "C" block on a new line.
+
+AfterFunction: true: Puts the { for a function definition on a new line.
+
+AfterNamespace: true: Puts the { for a namespace on a new line.
+
+AfterObjCDeclaration: true: Puts the { for Objective-C declarations on a new line.
+
+AfterStruct: true: Puts the { for a struct on a new line.
+
+AfterUnion: false: Keeps the { for a union on the same line.
+
+BeforeCatch: true: Puts the { for a catch block on a new line.
+
+BeforeElse: true: Puts the { for an else block on a new line.
+
+BeforeLambdaBody: false: Keeps the { for a lambda body on the same line.
+
+BeforeWhile: false: Keeps the { for a do-while loop's while on the same line.
+
+IndentBraces: false: Does not indent the { and } braces themselves.
+
+SplitEmptyFunction: true: Splits an empty function body ({}) onto two lines.
+
+SplitEmptyRecord: true: Splits an empty class/struct/enum body onto two lines.
+
+SplitEmptyNamespace: true: Splits an empty namespace body onto two lines.
+
+BreakAdjacentStringLiterals
+
+Your Value: true
+
+What it does: Puts adjacent string literals on separate lines.
+
+const char* s = "Hello"
+                "World";
+
+
+BreakAfterAttributes
+
+Your Value: Leave
+
+What it does: Does not change existing line breaks after attributes.
+
+BreakAfterJavaFieldAnnotations
+
+Your Value: false
+
+What it does: (Java-specific) Does not force a break after a field annotation.
+
+BreakAfterReturnType
+
+Your Value: None
+
+What it does: Does not force a line break after a function's return type.
+
+Small-talk:
+
+BreakArrays
+
+Your Value: true
+
+What it does: If an array initializer is too long, this will break it and put each element on a new line if necessary.
+
+BreakBeforeBinaryOperators
+
+Your Value: None
+
+What it does: Breaks lines after binary operators, not before.
+
+int x = a +
+        b;
+
+
+BreakBeforeConceptDeclarations
+
+Your Value: Always
+
+What it does: Always puts a newline before a C++ concept declaration.
+
+BreakBeforeBraces
+
+Your Value: Custom
+
+What it does: Indicates that you are using the detailed BraceWrapping options to control brace placement, rather than a single preset.
+
+BreakBeforeInlineASMColon
+
+YourValue: OnlyMultiline
+
+What it does: In inline assembly, only break before a colon if the statement is multi-line.
+
+BreakBeforeTemplateCloser
+
+Your Value: false
+
+What it does: Does not force a line break before the closing > of a template.
+
+BreakBeforeTernaryOperators
+
+Your Value: true
+
+What it does: Breaks before the ? and : in a ternary expression.
+
+int x = condition
+            ? true_value
+            : false_value;
+
+
+BreakBinaryOperations
+
+Your Value: Never
+
+What it does: Does not break binary operations. This is superseded by BreakBeforeBinaryOperators.
+
+BreakConstructorInitializers
+
+Your Value: BeforeColon
+
+What it does: Breaks a constructor initializer list before the colon (:).
+
+BreakFunctionDefinitionParameters
+
+Your Value: false
+
+What it does: Does not force all parameters of a function definition to be on separate lines.
+
+BreakInheritanceList
+
+Your Value: BeforeColon
+
+What it does: In a class definition, breaks the inheritance list before the colon (:).
+
+BreakStringLiterals
+
+Your Value: true
+
+What it does: Allows clang-format to break long string literals.
+
+BreakTemplateDeclarations
+
+Your Value: MultiLine
+
+What it does: Only breaks template declarations onto multiple lines if they are already multi-line.
+
+ColumnLimit
+
+Your Value: 120
+
+What it does: Sets the maximum line length to 120 characters. clang-format will try very hard not to exceed this.
+
+CommentPragmas
+
+Your Value: ^ IWYU pragma:
+
+What it does: A regular expression for comments that should not be reflowed or modified. This is used for "Include What You Use" (IWYU) directives.
+
+CompactNamespaces
+
+Your Value: false
+
+What it does: Does not collapse nested namespaces into namespace a::b { ... }.
+
+ConstructorInitializerIndentWidth
+
+Your Value: 2
+
+What it does: Indents constructor initializer lists by 2 spaces.
+
+ContinuationIndentWidth
+
+Your Value: 2
+
+What it does: Indents all continued lines by 2 spaces.
+
+Cpp11BracedListStyle
+
+Your Value: true
+
+What it does: When true, adds spaces inside C++11 braced lists (e.g., MyType{ a, b } instead of MyType{a, b}).
+
+DerivePointerAlignment
+
+Your Value: false
+
+What it does: Tells clang-format not to guess pointer alignment from the existing code. It will strictly use the PointerAlignment setting.
+
+DisableFormat
+
+Your Value: false
+
+What it does: Enables formatting. If true, clang-format would do nothing.
+
+EmptyLineAfterAccessModifier
+
+Your Value: Never
+
+What it does: Never inserts an empty line after public:, private:, or protected:.
+
+EmptyLineBeforeAccessModifier
+
+Your Value: LogicalBlock
+
+What it does: Inserts an empty line before an access modifier if it is preceded by another logical block (like a function or field declaration).
+
+EnumTrailingComma
+
+YourValue: Leave
+
+What it does: Leaves trailing commas in enum definitions as they are (doesn't add or remove them).
+
+ExperimentalAutoDetectBinPacking
+
+Your Value: false
+
+What it does: Disables an experimental feature that tries to auto-detect bin packing.
+
+FixNamespaceComments
+
+Your Value: true
+
+What it does: Adjusts comments after a closing namespace brace to match the namespace name (e.g., } // namespace MyNs).
+
+ForEachMacros
+
+Your Value: [ foreach, Q_FOREACH, BOOST_FOREACH ]
+
+What it does: A list of macros that should be treated like a for loop (for formatting purposes).
+
+IfMacros
+
+Your Value: [ KJ_IF_MAYBE ]
+
+What it does: A list of macros that should be treated like an if statement.
+
+IncludeBlocks
+
+Your Value: Preserve
+
+What it does: This setting is related to include sorting. Preserve means it will keep existing groups of includes separated by empty lines.
+
+IncludeCategories
+
+Your Value: (Multiple categories)
+
+What it 'does': This defines the categories for sorting #include directives.
+
+Priority: 2, Regex: '^"(llvm|llvm-c|clang|clang-c)/': Project headers (LLVM/Clang) are in category 2.
+
+Priority: 3, Regex: '^(<|"(gtest|gmock|isl|json)/)': System headers (<...>) and specific third-party headers (gtest, etc.) are in category 3.
+
+Priority: 1, Regex: '.*': Everything else (which usually means local headers like "my_file.h") is in category 1.
+
+Note: These rules are only applied if SortIncludes: Enabled: is set to true.
+
+IncludeIsMainRegex
+
+Your Value: (Test)?$
+
+What it does: A regex to identify the "main" include file for a source file (e.g., my_file.cpp's main include is my_file.h). This helps place it first.
+
+IncludeIsMainSourceRegex
+
+Your Value: ''
+
+What it does: An optional regex to match "main" source files. You have this disabled.
+
+IndentAccessModifiers
+
+Your Value: false
+
+What it does: Does not indent public:, private:, etc. relative to the class. (This is related to AccessModifierOffset).
+
+IndentCaseBlocks
+
+Your Value: false
+
+What it does: Does not indent the case blocks themselves within a switch statement.
+
+switch (x) {
+case 1: { // This block is not indented
+  ...
+}
+}
+
+
+IndentCaseLabels
+
+Your Value: false
+
+What it does: Does not indent the case 1: labels relative to the switch.
+
+IndentExportBlock
+
+Your Value: true
+
+What it does: Indents C++20 export { ... } blocks.
+
+IndentExternBlock
+
+Your Value: NoIndent
+
+What it does: Does not indent the contents of an extern "C" { ... } block.
+
+Full-file:
+
+IndentGotoLabels
+
+Your Value: true
+
+What it does: Indents goto labels.
+
+IndentPPDirectives
+
+Your Value: None
+
+What it does: Does not indent preprocessor directives (#if, #define, etc.).
+
+IndentRequiresClause
+
+Your Value: true
+
+What it does: Indents the requires clause in a C++ concept.
+
+IndentWidth
+
+Your Value: 2
+
+What it does: Sets the primary indentation width to 2 spaces.
+
+IndentWrappedFunctionNames
+
+Your Value: false
+
+What it does: Does not indent a function name if the return type is on a separate line.
+
+InsertBraces
+
+Your Value: false
+
+What it does: Does not automatically insert braces ({}) on if, for, while statements that don't have them.
+
+InsertNewlineAtEOF
+
+Your Value: false
+
+What it does: Does not automatically add a newline at the end of the file if one is missing.
+
+InsertTrailingCommas
+
+Your Value: None
+
+What it does: Does not add or remove trailing commas.
+
+IntegerLiteralSeparator
+
+Your Value: (All 0s)
+
+What it does: Disables the feature to automatically add C++14 digit separators (e.g., 1'000'000) to integer literals.
+
+JavaScriptQuotes
+
+Your Value: Leave
+
+What it does: (JavaScript-specific) Leaves string quotes (' vs ") as-is.
+
+JavaScriptWrapImports
+
+Your Value: true
+
+What it does: (JavaScript-specific) Enables wrapping of import statements.
+
+KeepEmptyLines
+
+Your Value:
+
+AtEndOfFile: false
+
+AtStartOfBlock: true
+
+AtStartOfFile: true
+
+What it does:
+
+AtEndOfFile: false: Does not keep empty lines at the end of a file.
+
+AtStartOfBlock: true: Keeps empty lines at the start of a block ({).
+
+AtStartOfFile: true: Keeps empty lines at the start of a file.
+
+KeepFormFeed
+
+Your Value: false
+
+What it does: Does not preserve form feed characters (\f).
+
+LambdaBodyIndentation
+
+Your Value: Signature
+
+What it does: Indents the lambda body relative to the lambda signature itself, not the start of the line.
+
+LineEnding
+
+YourValue: DeriveLF
+
+What it does: Tries to detect the line ending (LF vs CRLF) from the file, but defaults to LF (Unix-style).
+
+MacroBlockBegin / MacroBlockEnd
+
+Your Value: '' (Empty)
+
+What it does: Disables the feature for indenting macro blocks based on custom markers.
+
+MainIncludeChar
+
+Your Value: Quote
+
+What it does: Specifies that the main include file for a source uses quotes ("), not angle brackets (<).
+
+MaxEmptyLinesToKeep
+
+Your Value: 1
+
+What it does: Collapses multiple empty lines down to a maximum of one.
+
+NamespaceIndentation
+
+Your Value: None
+
+What it does: Does not indent the contents of namespaces.
+
+ObjC...
+
+What it does: These are Objective-C specific settings that control block indentation and spacing around properties/protocols.
+
+OneLineFormatOffRegex
+
+Your Value: '' (Empty)
+
+What it does: Disables the regex for turning off formatting on a single line.
+
+PackConstructorInitializers
+
+Your Value: BinPack
+
+What it does: Tries to pack constructor initializers onto as few lines as possible.
+
+Penalty...
+
+What it does: These settings assign "costs" to different formatting choices. clang-format tries to find the lowest-cost formatting.
+
+PenaltyBreakAssignment: 2: Very low cost for breaking after an assignment.
+
+PenaltyBreakBeforeFirstCallParameter: 19: Low cost for breaking before the first parameter in a function call.
+
+PenaltyBreakBeforeMemberAccess: 150: Medium cost for breaking before a . or ->.
+
+PenaltyBreakComment: 300: High cost for breaking lines inside a comment.
+
+PenaltyBreakFirstLessLess: 120: Medium cost for breaking before the first << in a stream insertion.
+
+PenaltyBreakOpenParenthesis: 0: No cost for breaking after an opening parenthesis.
+
+PenaltyBreakScopeResolution: 500: High cost for breaking before a ::.
+
+PenaltyBreakString: 1000: Very high cost for breaking a string literal.
+
+PenaltyExcessCharacter: 1000000: Extremely high cost for any character that goes over ColumnLimit, making it a hard limit.
+
+PenaltyIndentedWhitespace: 0: No cost for using whitespace for indentation.
+
+PenaltyReturnTypeOnItsOwnLine: 1000: Very high cost for putting a function's return type on its own line (discourages it).
+
+PointerAlignment
+
+Your Value: Right
+
+What it does: Aligns the pointer/reference sigil (* or &) to the right (with the type name).
+
+int* p; // Right alignment
+
+
+PPIndentWidth
+
+YourValue: -1
+
+What it does: A value of -1 means preprocessor directive indentation is disabled, relying on IndentPPDirectives instead.
+
+QualifierAlignment
+
+Your Value: Leave
+
+What it does: Leaves the alignment of const and volatile qualifiers as-is.
+
+ReferenceAlignment
+
+Your Value: Pointer
+
+What it does: Makes references (&) follow the same alignment rule as PointerAlignment (which you have set to Right).
+
+ReflowComments
+
+Your Value: Always
+
+What it does: Re-wraps comments (that are not pragmas) to fit within the ColumnLimit.
+
+RemoveBracesLLVM
+
+Your Value: false
+
+What it does: Disables a non-standard feature to remove braces.
+
+RemoveEmptyLinesInUnwrappedLines
+
+Your Value: false
+
+What it does: Does not remove empty lines when unwrapping a line.
+
+RemoveParentheses
+
+Your Value: Leave
+
+What it does: Does not automatically remove "unnecessary" parentheses.
+
+RemoveSemicolon
+
+Your Value: false
+
+What it does: Does not automatically remove "unnecessary" semicolons.
+
+RequiresClausePosition
+
+Your Value: OwnLine
+
+What it does: Puts the requires clause of a C++ concept on its own line.
+
+RequiresExpressionIndentation
+
+YourValue: OuterScope
+
+What it does: Indents the body of a requires expression relative to the outer scope.
+
+SeparateDefinitionBlocks
+
+Your Value: Leave
+
+What it does: Does not add or remove empty lines to separate definition blocks (functions, classes, etc.).
+
+ShortNamespaceLines
+
+Your Value: 1
+
+What it does: The maximum number of lines a "short" namespace can be. Used by AllowShortNamespacesOnASingleLine (which you have disabled).
+
+SkipMacroDefinitionBody
+
+YourValue: false
+
+What it does: Does not skip formatting the bodies of macro definitions.
+
+SortIncludes
+
+Your Value: Enabled: false
+
+What it does: Disables include sorting.
+
+IMPORTANT NOTE: Because this is disabled, your IncludeCategories and IncludeIsMainRegex settings are not being used.
+
+SortJavaStaticImport
+
+Your Value: Before
+
+What it does: (Java-specific) Sorts static imports before other imports.
+
+SortUsingDeclarations
+
+Your Value: LexicographicNumeric
+
+What it does: Sorts using declarations lexicographically (alphabetically), treating numbers numerically.
+
+SpaceAfterCStyleCast
+
+Your Value: false
+
+What it does: Does not put a space after a C-style cast (e.g., (int)x).
+
+SpaceAfterLogicalNot
+
+Your Value: false
+
+What it does: Does not put a space after a logical not (!) operator (e.g., !x).
+
+SpaceAfterOperatorKeyword
+
+Your Value: false
+
+What it does: Does not put a space after operator keywords (e.g., operator=).
+
+SpaceAfterTemplateKeyword
+
+Your Value: true
+
+What it does: Puts a space after the template keyword (e.g., template <...).
+
+SpaceAroundPointerQualifiers
+
+Your Value: Default
+
+What it does: Uses the default spacing around pointer qualifiers (e.g., const*).
+
+SpaceBeforeAssignmentOperators
+
+Your Value: true
+
+What it does: Puts a space before assignment operators (e.g., int x = 1;).
+
+SpaceBeforeCaseColon
+
+Your Value: false
+
+What it does: Does not put a space before the colon in a case label (e.g., case 1:).
+
+SpaceBeforeCpp11BracedList
+
+Your Value: false
+
+What it does: Does not put a space before a C++11 braced list (e.g., int x{0};).
+
+SpaceBeforeCtorInitializerColon
+
+Your Value: true
+
+What it does: Puts a space before the colon of a constructor initializer list.
+
+SpaceBeforeInheritanceColon
+
+Your Value: true
+
+What it does: Puts a space before the colon of an inheritance list.
+
+SpaceBeforeJsonColon
+
+Your Value: false
+
+What it does: (JSON-specific) Does not put a space before the colon in a key-value pair.
+
+SpaceBeforeParens
+
+Your Value: ControlStatements
+
+What it does: Puts a space before parentheses only in control statements.
+
+if (x) { ... } // Space
+my_func(x);    // No space
+
+
+SpaceBeforeParensOptions
+
+Your Value: (Multiple sub-settings)
+
+What it does: Fine-tunes the SpaceBeforeParens setting.
+
+AfterControlStatements: true: Adds space after if, for, while.
+
+AfterForeachMacros: true: Adds space after your defined ForEachMacros.
+
+AfterFunctionDefinitionName: false: No space after function definition name.
+
+AfterFunctionDeclarationName: false: No space after function declaration name.
+
+AfterIfMacros: true: Adds space after your defined IfMacros.
+
+AfterNot: false: No space after !.
+
+AfterOverloadedOperator: false: No space after operator keyword.
+
+AfterPlacementOperator: true: Adds space after new(placement).
+
+AfterRequiresInClause: false: No space after requires in a clause.
+
+AfterRequiresInExpression: false: No space after requires in an expression.
+
+BeforeNonEmptyParentheses: false: No space before non-empty ().
+
+SpaceBeforeRangeBasedForLoopColon
+
+Your Value: true
+
+What it does: Puts a space before the colon in a range-based for loop.
+
+SpaceBeforeSquareBrackets
+
+Your Value: false
+
+What it does: Does not put a space before [ (e.g., in array access a[0]).
+
+SpaceInEmptyBlock
+
+Your Value: false
+
+What it does: Does not put a space in an empty block (e.g., {} not { }).
+
+SpacesBeforeTrailingComments
+
+Your Value: 1
+
+What it does: Puts a minimum of 1 space before a trailing comment.
+
+SpacesInAngles
+
+YourValue: Never
+
+What it does: Does not put spaces inside template angle brackets (e.g., vector<int>).
+
+SpacesInContainerLiterals
+
+Your Value: true
+
+What it does: Puts spaces inside container literals (e.g., [ a, b ] or { a, b }).
+
+SpacesInLineCommentPrefix
+
+Your Value:
+
+Minimum: 1
+
+Maximum: -1
+
+What it does:
+
+Minimum: 1: Ensures there is at least 1 space after the //.
+
+Maximum: -1: -1 means no maximum, so it won't remove extra spaces.
+
+SpacesInParens
+
+Your Value: Never
+
+What it does: Does not put spaces inside parentheses (e.g., (x) not ( x )).
+
+SpacesInParensOptions
+
+Your Value: (All false)
+
+What it does: Disables all special cases for parenthesis spacing.
+
+SpacesInSquareBrackets
+
+Your Value: false
+
+What it does: Does not put spaces inside square brackets (e.g., [x] not [ x ]).
+
+Standard
+
+Your Value: Latest
+
+What it does: Tells clang-format to use formatting rules appropriate for the latest C++ standard it knows about (e.g., C++20/23).
+
+StatementAttributeLikeMacros
+
+Your Value: [ Q_EMIT ]
+
+What it does: A list of macros that should be treated like statement attributes.
+
+StatementMacros
+
+Your Value: [ Q_UNUSED, QT_REQUIRE_VERSION ]
+
+What it does: A list of macros that should be treated as a full statement.
+
+TableGenBreakInsideDAGArg
+
+Your Value: DontBreak
+
+What it does: (TableGen-specific) Does not break inside DAG arguments.
+
+TabWidth
+
+Your Value: 2
+
+What it does: Sets the width of a tab character to 2 spaces. This is used for alignment calculations, even though you are not using tabs.
+
+UseTab
+
+Your Value: Never
+
+What it does: Always uses spaces for indentation, never tab characters.
+
+VerilogBreakBetweenInstancePorts
+
+Your Value: true
+
+What it does: (Verilog-specific) Breaks between instance ports.
+
+WhitespaceSensitiveMacros
+
+Your Value: (Multiple values)
+
+What it does: A list of macros where whitespace is important and should not be modified by the formatter.

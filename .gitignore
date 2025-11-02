@@ -1,0 +1,46 @@
+# Build directory
+build/
+build*/
+
+# VS Code specific files and directories
+# .vscode/
+*.code-workspace
+
+# CMake generated files
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# Build outputs
+*.o
+*.d
+*.elf
+*.hex
+*.bin
+*.map
+*.lst
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# IDE specific files (in case you use other IDEs in the future)
+.settings/
+.project
+.cproject
+.idea/
+*.sublime-*
+
+# OS specific files
+.DS_Store
+Thumbs.db

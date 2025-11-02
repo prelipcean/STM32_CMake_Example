@@ -1,0 +1,51 @@
+{
+  // Use Prettier as the default formatter for JSON and JSONC files
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // File associations for embedded development
+  "files.associations": {
+    "*.h": "c",
+    "*.c": "c",
+    "*.s": "arm",
+    "*.ld": "linkerscript",
+    "stm32f4xx.h": "c",
+    "stm32f429xx.h": "c"
+  },
+
+  // Clang-Format settings
+  "clang-format.executable": "C:/Program Files/LLVM/bin/clang-format.exe",
+  "[cpp]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "[c]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  // CMake configuration
+  "cmake.configureOnOpen": true,
+  "cmake.configureArgs": [
+    "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/cmake/arm-none-eabi-toolchain.cmake"
+  ],
+  "cmake.buildDirectory": "${workspaceFolder}/build",
+  "cmake.generator": "Ninja",
+
+  // Editor settings for C development
+  "editor.rulers": [80, 120],
+  "editor.renderWhitespace": "all",
+  "editor.detectIndentation": false,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+
+  // C/C++ specific settings
+  "C_Cpp.default.includePath": ["${workspaceFolder}/**"],
+  "C_Cpp.default.defines": ["STM32", "STM32F4", "STM32F429xx", "STM32F429ZITx"],
+  "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 100 }",
+  "C_Cpp.default.cStandard": "c11",
+  "C_Cpp.enhancedColorization": "enabled",
+  "C_Cpp.suggestSnippets": true,
+
+  // Cortex-Debug settings (if you plan to use it)
+  "cortex-debug.armToolchainPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.3 rel1/bin",
+  "cortex-debug.openocdPath": "${env:OPENOCD_DIR}/bin/openocd.exe"
+}

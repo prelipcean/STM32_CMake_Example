@@ -1,0 +1,33 @@
+{
+  "configurations": [
+    {
+      "name": "ARM-BareMetal",
+      "includePath": [
+        // Always keep this to recursively search for local project headers
+        "${workspaceFolder}/**",
+        // Project-specific include directories (kept in sync with CMake PROJECT_INCLUDE_DIRS)
+        "${workspaceFolder}/Project/CMSIS/Device/ST/STM32F4xx/Include",
+        "${workspaceFolder}/Project/CMSIS/Include",
+        "${workspaceFolder}/Project/Utilities/Include",
+        "${workspaceFolder}/Project/MCAL/FPU/Include",
+        "${workspaceFolder}/Project/MCAL/SystemClock/Include",
+        "${workspaceFolder}/Project/MCAL/GPIO/Include",
+        // Board include (if headers exist there)
+        "${workspaceFolder}/Project/Board/STM32F429ZI"
+      ],
+      // Defines needed for the HAL/CMSIS headers to correctly define your MCU
+      "defines": ["STM32", "STM32F4", "STM32F429xx", "STM32F429ZITx"],
+      // ----------------------------------------------------------------------------------
+      // **Crucial Changes:**
+      // 1. Compiler Path: Changed to your specified path for arm-none-eabi-gcc.exe
+      // 2. IntelliSense Mode: Changed to 'gcc-arm'
+      // ----------------------------------------------------------------------------------
+      "compilerPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.3 rel1/bin/arm-none-eabi-gcc.exe",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "gcc-arm"
+    }
+  ],
+  // Remove the old 'Win32' configuration if you are no longer doing desktop development
+  "version": 4
+}
