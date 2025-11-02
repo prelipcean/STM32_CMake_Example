@@ -12,6 +12,7 @@
         "${workspaceFolder}/Project/MCAL/FPU/Include",
         "${workspaceFolder}/Project/MCAL/SystemClock/Include",
         "${workspaceFolder}/Project/MCAL/GPIO/Include",
+        "${workspaceFolder}/Project/MCAL/SysCfgCtrl/Include",
         // Board include (if headers exist there)
         "${workspaceFolder}/Project/Board/STM32F429ZI"
       ],

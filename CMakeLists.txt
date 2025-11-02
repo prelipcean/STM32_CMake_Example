@@ -57,14 +57,21 @@ else()
   # --- Define Your Source and Include Files Here ---
   # Add all your .c/.cpp source files here
   set(PROJECT_SOURCES
-      Project/MCAL/FPU/Source/fpu.c Project/MCAL/SystemClock/Source/sysclock.c
-      Project/MCAL/GPIO/Source/gpio.c Project/Board/STM32F429ZI/board.c)
+      Project/MCAL/FPU/Source/fpu.c 
+      Project/MCAL/SystemClock/Source/sysclock.c
+      Project/MCAL/SysCfgCtrl/Source/syscfgctrl.c
+      Project/MCAL/GPIO/Source/gpio.c
+      Project/Board/STM32F429ZI/board.c)
 
   # Add all your include directories here
   set(PROJECT_INCLUDE_DIRS
-      Project/CMSIS/Device/ST/STM32F4xx/Include Project/CMSIS/Include
-      Project/Utilities/Include Project/MCAL/FPU/Include
-      Project/MCAL/SystemClock/Include Project/MCAL/GPIO/Include)
+      Project/CMSIS/Device/ST/STM32F4xx/Include
+      Project/CMSIS/Include
+      Project/Utilities/Include
+      Project/MCAL/FPU/Include
+      Project/MCAL/SystemClock/Include
+      Project/MCAL/GPIO/Include
+      Project/MCAL/SysCfgCtrl/Include)
   # --- End of File Definitions ---
 
   # Add the executable target
