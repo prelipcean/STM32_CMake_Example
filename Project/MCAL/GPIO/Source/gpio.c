@@ -237,6 +237,31 @@ void GPIO_TogglePin(GPIO_TypeDef *GPIOx, uint8 pinNumber)
   GPIOx->ODR ^= (1U << pinNumber);
 }
 
+/**
+ * @brief       Locks the configuration of a specific GPIO pin.
+ * @note        Once a pin is locked, its configuration cannot be changed until
+ *              the next system reset. This function follows the lock key
+ *              sequence as specified in the STM32F4xx reference manual.
+ * @param[in]   GPIOx Pointer to the GPIO peripheral base address (e.g., GPIOA).
+ * @param[in]   pinNumber The pin number to lock (0-15).
+ * @retval      None
+ */
+void GPIO_LockPin(GPIO_TypeDef *GPIOx, uint8 pinNumber)
+{
+  uint32 l_lockKey_u32;
+
+  /* Prepare the lock key sequence */
+  l_lockKey_u32 = (1U << pinNumber) | (1U << 16U); // Set LCKK bit along with pin bit
+
+  /* Write the lock key sequence to LCKR register */
+  GPIOx->LCKR   = l_lockKey_u32;     // Step 1: Write 1 to LCKK and pin bit
+  GPIOx->LCKR   = (1U << pinNumber); // Step 2: Write 0 to LCKK, keep pin bit
+  GPIOx->LCKR   = l_lockKey_u32;     // Step 3: Write 1 to LCKK and pin bit again
+
+  /* Read back LCKR to confirm the lock is active */
+  (void)GPIOx->LCKR; // Step 4: Read LCKR register (dummy read)
+}
+
 /******************************************************************************
  * End of File                                                                *
  ******************************************************************************/

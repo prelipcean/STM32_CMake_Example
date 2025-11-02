@@ -189,6 +189,7 @@ void GPIO_DeInit();
 void GPIO_WritePin(GPIO_TypeDef *GPIOx, uint8 pinNumber, GPIO_PinState_T value);
 uint8 GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint8 pinNumber);
 void GPIO_TogglePin(GPIO_TypeDef *GPIOx, uint8 pinNumber);
+void GPIO_LockPin(GPIO_TypeDef *GPIOx, uint8 pinNumber);
 
 #ifdef __cplusplus
 }
