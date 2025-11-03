@@ -62,6 +62,7 @@ else()
       Project/MCAL/SystemClock/Source/sysclock.c
       Project/MCAL/SysCfgCtrl/Source/syscfgctrl.c
       Project/MCAL/GPIO/Source/gpio.c
+      Project/MCAL/USART/Source/usart.c
       Project/Board/STM32F429ZI/board.c)
 
   # Add all your include directories here
@@ -73,6 +74,7 @@ else()
       Project/MCAL/NVIC/Include
       Project/MCAL/SystemClock/Include
       Project/MCAL/GPIO/Include
+      Project/MCAL/USART/Include
       Project/MCAL/SysCfgCtrl/Include)
   # --- End of File Definitions ---
 

@@ -2,6 +2,7 @@
 #include "fpu.h"
 #include "sysclock.h"
 #include "gpio.h"
+#include "usart.h"
 
 /*
  * Two user LEDs: LD3 (green), LD4 (red)
@@ -43,6 +44,34 @@ STATIC const GPIO_PinConfig_T blueButtonConfig = {.pinNumber   = GPIO_PIN_NUM_0,
                                                   .alternate   = GPIO_AF0,
                                                   .edgeTrigger = GPIO_EXTI_RISING_EDGE};
 
+/* USART3 configuration structure */
+STATIC const USART_Config_T usart3Config       = {.BaudRate     = USART_BAUDRATE_9600,
+                                                  .Mode         = USART_MODE_TX_RX,
+                                                  .WordLength   = USART_WORD_LENGTH_8B,
+                                                  .StopBits     = USART_STOPBITS_1,
+                                                  .Parity       = USART_PARITY_NONE,
+                                                  .HwFlowCtl    = USART_HW_FLOWCTL_NONE,
+                                                  .OverSampling = USART_OVERSAMPLING_16};
+/* Use PD8 Tx AF7 and PD9 Rx AF7 */
+STATIC const GPIO_PinConfig_T uart3Tx          = {.pinNumber = GPIO_PIN_NUM_8,
+                                                  .mode      = GPIO_MODE_AF,
+                                                  .type      = GPIO_OUTPUT_TYPE_PP,
+                                                  .speed     = GPIO_SPEED_VERY_HIGH,
+                                                  .pull      = GPIO_NO_PULL,
+                                                  .alternate = GPIO_AF7};
+
+STATIC const GPIO_PinConfig_T uart3Rx          = {.pinNumber = GPIO_PIN_NUM_9,
+                                                  .mode      = GPIO_MODE_AF,
+                                                  .type      = GPIO_OUTPUT_TYPE_PP,
+                                                  .speed     = GPIO_SPEED_VERY_HIGH,
+                                                  .pull      = GPIO_NO_PULL,
+                                                  .alternate = GPIO_AF7};
+
+static uint8 ReceivedDataBuffer[1];
+static uint8 ReceivedDataSize = 1;
+
+static void UART3_Init(void);
+
 int Board_Init(void)
 {
   /* Optional: Output the clock to a pin for verification */
@@ -50,14 +79,15 @@ int Board_Init(void)
   SysClock_OutputMCO2(); // Output SYSCLK/5 on PC9
 
   /* Configure green LED (PG13) */
-  GPIOG_CLOCK_ENABLE();
   GPIO_Init(GPIOG, &greenLedConfig);
 
   /* Configure blue user button (PA0) */
-  GPIOA_CLOCK_ENABLE();
   GPIO_Init(GPIOA, &blueButtonConfig);
   /* Configure button interrupt */
   GPIO_SetPinInterrupt(GPIOA, &blueButtonConfig, 5u); // Priority 5
+
+  /* Initialize USART3 for serial communication */
+  UART3_Init();
 
   while (1)
   {
@@ -65,6 +95,11 @@ int Board_Init(void)
 
     /* Toggle green LED to indicate normal operation */
     GPIO_TogglePin(GPIOG, GREEN_LED_PIN);
+
+    /* Receive data */
+    USART_ReceiveData(USART3, ReceivedDataBuffer, ReceivedDataSize);
+    /* Echo back received data over USART3 */
+    USART_TransmitData(USART3, ReceivedDataBuffer, ReceivedDataSize);
 
 #if 0 /* Polling method / no debounce ! */
     if (1u == GPIO_ReadPin(GPIOA, BLUE_BUTTON_PIN))
@@ -103,8 +138,6 @@ void SystemInit(void)
     /* Clock setup failed - flash LED to indicate error */
     while (1)
     {
-      /* Enable GPIOG clock */
-      GPIOG_CLOCK_ENABLE();
       GPIO_Init(GPIOG, &redLedConfig);
       GPIO_TogglePin(GPIOG, RED_LED_PIN);
 
@@ -115,8 +148,6 @@ void SystemInit(void)
   else
   {
     /* Clock setup successful - proceed normally */
-    /* Enable GPIOG clock for other usage */
-    GPIOG_CLOCK_ENABLE();
     GPIO_Init(GPIOG, &redLedConfig);
   }
 
@@ -125,6 +156,16 @@ void SystemInit(void)
   //   SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET; /* Vector Table
   //   Relocation in Internal SRAM */
   // #endif /* USER_VECT_TAB_ADDRESS */
+}
+
+static void UART3_Init(void)
+{
+  /* Initialize GPIO pins for USART3 Tx and Rx */
+  GPIO_Init(GPIOD, &uart3Tx);
+  GPIO_Init(GPIOD, &uart3Rx);
+
+  /* Initialize USART3 peripheral */
+  USART_Init(USART3, &usart3Config);
 }
 
 /**

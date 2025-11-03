@@ -20,6 +20,19 @@
  * MACRO DEFINITIONS
  * Constants, bit masks, register configurations, etc.
  ******************************************************************************/
+#define GPIO_CLK_ENABLE(GPIOx) \
+( (GPIOx == GPIOA) ? GPIOA_CLOCK_ENABLE() : \
+  (GPIOx == GPIOB) ? GPIOB_CLOCK_ENABLE() : \
+  (GPIOx == GPIOC) ? GPIOC_CLOCK_ENABLE() : \
+  (GPIOx == GPIOD) ? GPIOD_CLOCK_ENABLE() : \
+  (GPIOx == GPIOE) ? GPIOE_CLOCK_ENABLE() : \
+  (GPIOx == GPIOF) ? GPIOF_CLOCK_ENABLE() : \
+  (GPIOx == GPIOG) ? GPIOG_CLOCK_ENABLE() : \
+  (GPIOx == GPIOH) ? GPIOH_CLOCK_ENABLE() : \
+  (GPIOx == GPIOI) ? GPIOI_CLOCK_ENABLE() : \
+  (GPIOx == GPIOJ) ? GPIOJ_CLOCK_ENABLE() : \
+  (GPIOx == GPIOK) ? GPIOK_CLOCK_ENABLE() : (void)0 )
+
 /**
  * @def GPIO_MODER_MASK(pin)
  * @brief Mask for 2 bits per pin in MODER register
@@ -107,6 +120,9 @@ void GPIO_Init(GPIO_TypeDef *GPIOx, const GPIO_PinConfig_T *pinConfig)
 {
   uint8 l_afrIndex_u8;    /* Index 0 or 1 which indicates AFRL or AFRH */
   uint8 l_afrPosition_u8; /* Position of the alternate function bits */
+
+  /* Enable the GPIO port clock */
+  GPIO_CLK_ENABLE(GPIOx);
 
   /* Configure the pin mode */
   GPIOx->MODER &= ~GPIO_MODER_MASK(pinConfig->pinNumber);          // Clear mode bits

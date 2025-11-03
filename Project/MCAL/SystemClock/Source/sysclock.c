@@ -45,6 +45,9 @@
  * Adjust this based on your startup time requirements.
  */
 #define OSC_STARTUP_TIMEOUT 0x5000U
+// ============================================================================
+static const uint16 AHBPrescaler[8] = {2, 4, 8, 16, 64, 128, 256, 512};
+static const uint8 APBPrescaler[4]  = {2, 4, 8, 16};
 
 /**
  * @brief Lock flag to prevent clock reconfiguration during critical operations
@@ -101,8 +104,12 @@ uint32 SysClock_GetHCLK(void)
   
   if (presc & 0x8)
   {
-    presc = (0x10 << (presc & 0x7)) >> 1;
+    presc = AHBPrescaler[presc - 8];
     hclk /= presc;
+  }
+  else
+  {
+    // No division
   }
   
   return hclk;
@@ -119,8 +126,12 @@ uint32 SysClock_GetPCLK1(void)
   
   if (presc & 0x4)
   {
-    presc = (0x8 << (presc & 0x3)) >> 1;
+    presc = APBPrescaler[presc - 4];
     pclk1 /= presc;
+  }
+  else
+  {
+    // No division
   }
   
   return pclk1;
@@ -137,8 +148,12 @@ uint32 SysClock_GetPCLK2(void)
   
   if (presc & 0x4)
   {
-    presc = (0x8 << (presc & 0x3)) >> 1;
+    presc = APBPrescaler[presc - 4];
     pclk2 /= presc;
+  }
+  else
+  {
+    // No division
   }
   
   return pclk2;
