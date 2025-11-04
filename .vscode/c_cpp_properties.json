@@ -15,6 +15,9 @@
         "${workspaceFolder}/Project/MCAL/GPIO/Include",
         "${workspaceFolder}/Project/MCAL/SysCfgCtrl/Include",
         "${workspaceFolder}/Project/MCAL/USART/Include",
+        "${workspaceFolder}/Project/Config/USART/Include",
+        "${workspaceFolder}/Project/Application/SWC_Controller/Include",
+        "${workspaceFolder}/Project/VFB/Generated",
         // Board include (if headers exist there)
         "${workspaceFolder}/Project/Board/STM32F429ZI"
       ],
