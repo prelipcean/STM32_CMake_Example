@@ -1,5 +1,5 @@
 /******************************************************************************
- * @file                controller.h
+ * @file                vfb_controller.h
  * @brief               
  *
  * @details             
@@ -7,8 +7,8 @@
  * @note                
  ******************************************************************************/
 
-#ifndef CONTROLLER_H_
-#define CONTROLLER_H_
+#ifndef VFB_CONTROLLER_H_
+#define VFB_CONTROLLER_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -19,12 +19,15 @@ extern "C"
  * INCLUDES
  * List of required header files
  ******************************************************************************/
-
+#include "std_types.h"
+#include "usart3_bsp.h"
 
 /******************************************************************************
  * MACRO DEFINITIONS
  * Constants, configurations, and function-like macros
  ******************************************************************************/
+#define VFB_USART3_Init() USART3_Init()
+#define VFB_USART3_PollingDemo() USART3_PollingDemo()
 
 /******************************************************************************
  * TYPE DEFINITIONS
@@ -50,14 +53,13 @@ extern "C"
  * API FUNCTIONS
  * Public function prototypes
  ******************************************************************************/
-void Controller_Init(void);
-void Controller_Runnable(void);
+
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CONTROLLER_H_ */
+#endif /* VFB_CONTROLLER_H_ */
 
 /******************************************************************************
  * End of File                                                                *

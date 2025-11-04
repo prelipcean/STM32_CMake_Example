@@ -2,7 +2,7 @@
 #include "fpu.h"
 #include "sysclock.h"
 #include "gpio.h"
-#include "controller.h"
+#include "swc_controller.h"
 /*
  * Two user LEDs: LD3 (green), LD4 (red)
  * The green LED is a user LED connected to the I/O PG13 of the STM32F429ZIT6.

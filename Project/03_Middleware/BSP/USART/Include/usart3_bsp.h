@@ -1,5 +1,5 @@
 /******************************************************************************
- * @file                vfb_controller.h
+ * @file                usart3_bsp.h
  * @brief               
  *
  * @details             
@@ -7,8 +7,8 @@
  * @note                
  ******************************************************************************/
 
-#ifndef VFB_CONTROLLER_H_
-#define VFB_CONTROLLER_H_
+#ifndef USART3_BSP_H_
+#define USART3_BSP_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -20,14 +20,11 @@ extern "C"
  * List of required header files
  ******************************************************************************/
 #include "std_types.h"
-#include "usart3_config.h"
 
 /******************************************************************************
  * MACRO DEFINITIONS
  * Constants, configurations, and function-like macros
  ******************************************************************************/
-#define VFB_USART3_Init() USART3_Init()
-#define VFB_USART3_PollingDemo() USART3_PollingDemo()
 
 /******************************************************************************
  * TYPE DEFINITIONS
@@ -53,13 +50,14 @@ extern "C"
  * API FUNCTIONS
  * Public function prototypes
  ******************************************************************************/
-
+void USART3_Init(void);
+void USART3_PollingDemo(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* VFB_CONTROLLER_H_ */
+#endif /* USART3_BSP_H_ */
 
 /******************************************************************************
  * End of File                                                                *

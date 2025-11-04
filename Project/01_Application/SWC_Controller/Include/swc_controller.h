@@ -1,5 +1,5 @@
 /******************************************************************************
- * @file                usart3_config.h
+ * @file                swc_controller.h
  * @brief               
  *
  * @details             
@@ -7,8 +7,8 @@
  * @note                
  ******************************************************************************/
 
-#ifndef USART3_CONFIG_H_
-#define USART3_CONFIG_H_
+#ifndef SWC_CONTROLLER_H_
+#define SWC_CONTROLLER_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -19,7 +19,7 @@ extern "C"
  * INCLUDES
  * List of required header files
  ******************************************************************************/
-#include "std_types.h"
+
 
 /******************************************************************************
  * MACRO DEFINITIONS
@@ -50,14 +50,14 @@ extern "C"
  * API FUNCTIONS
  * Public function prototypes
  ******************************************************************************/
-void USART3_Init(void);
-void USART3_PollingDemo(void);
+void Controller_Init(void);
+void Controller_Runnable(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* USART3_CONFIG_H_ */
+#endif /* SWC_CONTROLLER_H_ */
 
 /******************************************************************************
  * End of File                                                                *

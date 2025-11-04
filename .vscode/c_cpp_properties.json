@@ -6,20 +6,24 @@
         // Always keep this to recursively search for local project headers
         "${workspaceFolder}/**",
         // Project-specific include directories (kept in sync with CMake PROJECT_INCLUDE_DIRS)
-        "${workspaceFolder}/Project/CMSIS/Device/ST/STM32F4xx/Include",
-        "${workspaceFolder}/Project/CMSIS/Include",
-        "${workspaceFolder}/Project/Utilities/Include",
-        "${workspaceFolder}/Project/MCAL/FPU/Include",
-        "${workspaceFolder}/Project/MCAL/NVIC/Include",
-        "${workspaceFolder}/Project/MCAL/SystemClock/Include",
-        "${workspaceFolder}/Project/MCAL/GPIO/Include",
-        "${workspaceFolder}/Project/MCAL/SysCfgCtrl/Include",
-        "${workspaceFolder}/Project/MCAL/USART/Include",
-        "${workspaceFolder}/Project/Config/USART/Include",
-        "${workspaceFolder}/Project/Application/SWC_Controller/Include",
-        "${workspaceFolder}/Project/VFB/Generated",
-        // Board include (if headers exist there)
-        "${workspaceFolder}/Project/Board/STM32F429ZI"
+        // 01_Application Layer
+        "${workspaceFolder}/Project/01_Application/SWC_Controller/Include",
+        // 02_VFB Layer
+        "${workspaceFolder}/Project/02_VFB/Generated",
+        // 03_Middlewares / Services Layer
+        "${workspaceFolder}/Project/03_Middleware/BSP/STM32F429ZI",
+        "${workspaceFolder}/Project/03_Middleware/BSP/USART/Include",
+        // 04_MCAL Layer
+        "${workspaceFolder}/Project/04_MCAL/CMSIS/Device/ST/STM32F4xx/Include",
+        "${workspaceFolder}/Project/04_MCAL/CMSIS/Include",
+        "${workspaceFolder}/Project/04_MCAL/FPU/Include",
+        "${workspaceFolder}/Project/04_MCAL/NVIC/Include",
+        "${workspaceFolder}/Project/04_MCAL/SystemClock/Include",
+        "${workspaceFolder}/Project/04_MCAL/SysCfgCtrl/Include",
+        "${workspaceFolder}/Project/04_MCAL/GPIO/Include",
+        "${workspaceFolder}/Project/04_MCAL/USART/Include",
+        // Others
+        "${workspaceFolder}/Project/YY_Utilities/Include"
       ],
       // Defines needed for the HAL/CMSIS headers to correctly define your MCU
       "defines": ["STM32", "STM32F4", "STM32F429xx", "STM32F429ZITx"],

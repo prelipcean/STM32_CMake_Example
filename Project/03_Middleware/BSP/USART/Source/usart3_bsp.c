@@ -1,5 +1,5 @@
 /******************************************************************************
- * @file                usart3_config.c
+ * @file                usart3_bsp.c
  * @brief               
  *
  * @details             
@@ -9,7 +9,7 @@
  * INCLUDES
  * List of header files required by this source file
  ******************************************************************************/
-#include "usart3_config.h"
+#include "usart3_bsp.h"
 #include "gpio.h"
 #include "usart.h"
 

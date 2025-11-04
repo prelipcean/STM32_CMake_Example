@@ -1,5 +1,5 @@
 /******************************************************************************
- * @file                controller.c
+ * @file                swc_controller.c
  * @brief
  *
  * @details
@@ -9,8 +9,8 @@
  * INCLUDES
  * List of header files required by this source file
  ******************************************************************************/
-#include "controller.h"
-#include "vfb_controller.h"
+#include "swc_controller.h"
+#include "vfb_swc_controller.h"
 
 /******************************************************************************
  * MACRO DEFINITIONS

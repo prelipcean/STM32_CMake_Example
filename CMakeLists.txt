@@ -48,39 +48,55 @@ else()
 
   # MCU-specific files (relative to this CMakeLists.txt)
   set(STARTUP_FILE
-      ${CMAKE_CURRENT_SOURCE_DIR}/Project/Board/STM32F429ZI/startup/startup_stm32f429zitx.s
+      ${CMAKE_CURRENT_SOURCE_DIR}/Project/03_Middleware/BSP/STM32F429ZI/startup/startup_stm32f429zitx.s
   )
   set(LINKER_SCRIPT
-      ${CMAKE_CURRENT_SOURCE_DIR}/Project/Board/STM32F429ZI/linker/STM32F429ZITX_FLASH.ld
+      ${CMAKE_CURRENT_SOURCE_DIR}/Project/03_Middleware/BSP/STM32F429ZI/linker/STM32F429ZITX_FLASH.ld
   )
 
   # --- Define Your Source and Include Files Here ---
   # Add all your .c/.cpp source files here
   set(PROJECT_SOURCES
-      Project/MCAL/FPU/Source/fpu.c
-      Project/MCAL/NVIC/Source/nvic.c
-      Project/MCAL/SystemClock/Source/sysclock.c
-      Project/MCAL/SysCfgCtrl/Source/syscfgctrl.c
-      Project/MCAL/GPIO/Source/gpio.c
-      Project/MCAL/USART/Source/usart.c
-      Project/Config/USART/Source/usart3_config.c
-      Project/Application/SWC_Controller/Source/controller.c
-      Project/Board/STM32F429ZI/board.c)
+      # 01_Application Layer
+      Project/01_Application/SWC_Controller/Source/swc_controller.c
+
+      # 02_VFB Layer
+
+      # 03_Middlewares / Services Layer
+      Project/03_Middleware/BSP/STM32F429ZI/board.c
+      Project/03_Middleware/BSP/USART/Source/usart3_bsp.c
+      
+      # 04_MCAL Layer
+      Project/04_MCAL/FPU/Source/fpu.c
+      Project/04_MCAL/NVIC/Source/nvic.c
+      Project/04_MCAL/SystemClock/Source/sysclock.c
+      Project/04_MCAL/SysCfgCtrl/Source/syscfgctrl.c
+      Project/04_MCAL/GPIO/Source/gpio.c
+      Project/04_MCAL/USART/Source/usart.c)
 
   # Add all your include directories here
   set(PROJECT_INCLUDE_DIRS
-      Project/CMSIS/Device/ST/STM32F4xx/Include
-      Project/CMSIS/Include
-      Project/Utilities/Include
-      Project/MCAL/FPU/Include
-      Project/MCAL/NVIC/Include
-      Project/MCAL/SystemClock/Include
-      Project/MCAL/GPIO/Include
-      Project/MCAL/USART/Include
-      Project/Config/USART/Include
-      Project/Application/SWC_Controller/Include
-      Project/VFB/Generated
-      Project/MCAL/SysCfgCtrl/Include)
+      # 01_Application Layer
+      Project/01_Application/SWC_Controller/Include
+
+      # 02_VFB Layer
+      Project/02_VFB/Generated
+
+      # 03_Middlewares / Services Layer
+      Project/03_Middleware/BSP/USART/Include
+
+      # 04_MCAL Layer
+      Project/04_MCAL/CMSIS/Device/ST/STM32F4xx/Include
+      Project/04_MCAL/CMSIS/Include
+      Project/04_MCAL/FPU/Include
+      Project/04_MCAL/NVIC/Include
+      Project/04_MCAL/SystemClock/Include
+      Project/04_MCAL/SysCfgCtrl/Include
+      Project/04_MCAL/GPIO/Include
+      Project/04_MCAL/USART/Include
+      
+      # Others
+      Project/YY_Utilities/Include)
   # --- End of File Definitions ---
 
   # Add the executable target
