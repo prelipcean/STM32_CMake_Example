@@ -1,8 +1,8 @@
 /******************************************************************************
  * @file                usart3_bsp.c
- * @brief               
+ * @brief
  *
- * @details             
+ * @details
  ******************************************************************************/
 
 /******************************************************************************
@@ -33,27 +33,38 @@
  * File-scope constants (static const)
  ******************************************************************************/
 /* USART3 configuration structure */
-STATIC const USART_Config_T usart3Config       = {.BaudRate     = USART_BAUDRATE_9600,
-                                                  .Mode         = USART_MODE_TX_RX,
-                                                  .WordLength   = USART_WORD_LENGTH_8B,
-                                                  .StopBits     = USART_STOPBITS_1,
-                                                  .Parity       = USART_PARITY_NONE,
-                                                  .HwFlowCtl    = USART_HW_FLOWCTL_NONE,
-                                                  .OverSampling = USART_OVERSAMPLING_16};
-/* Use PD8 Tx AF7 and PD9 Rx AF7 */
-STATIC const GPIO_PinConfig_T uart3Tx          = {.pinNumber = GPIO_PIN_NUM_8,
-                                                  .mode      = GPIO_MODE_AF,
-                                                  .type      = GPIO_OUTPUT_TYPE_PP,
-                                                  .speed     = GPIO_SPEED_VERY_HIGH,
-                                                  .pull      = GPIO_NO_PULL,
-                                                  .alternate = GPIO_AF7};
+STATIC const USART_Config_T usart3Config   = {.BaudRate        = USART_BAUDRATE_9600,
+                                              .Mode            = USART_MODE_TX_RX,
+                                              .WordLength      = USART_WORD_LENGTH_8B,
+                                              .StopBits        = USART_STOPBITS_1,
+                                              .Parity          = USART_PARITY_NONE,
+                                              .HwFlowCtl       = USART_HW_FLOWCTL_NONE,
+                                              .OverSampling    = USART_OVERSAMPLING_16,
+                                              .InterruptEnable = 0};
 
-STATIC const GPIO_PinConfig_T uart3Rx          = {.pinNumber = GPIO_PIN_NUM_9,
-                                                  .mode      = GPIO_MODE_AF,
-                                                  .type      = GPIO_OUTPUT_TYPE_PP,
-                                                  .speed     = GPIO_SPEED_VERY_HIGH,
-                                                  .pull      = GPIO_NO_PULL,
-                                                  .alternate = GPIO_AF7};
+STATIC const USART_Config_T usart3ItConfig = {.BaudRate        = USART_BAUDRATE_9600,
+                                              .Mode            = USART_MODE_TX_RX,
+                                              .WordLength      = USART_WORD_LENGTH_8B,
+                                              .StopBits        = USART_STOPBITS_1,
+                                              .Parity          = USART_PARITY_NONE,
+                                              .HwFlowCtl       = USART_HW_FLOWCTL_NONE,
+                                              .OverSampling    = USART_OVERSAMPLING_16,
+                                              .InterruptEnable = 1};
+
+/* Use PD8 Tx AF7 and PD9 Rx AF7 */
+STATIC const GPIO_PinConfig_T uart3Tx      = {.pinNumber = GPIO_PIN_NUM_8,
+                                              .mode      = GPIO_MODE_AF,
+                                              .type      = GPIO_OUTPUT_TYPE_PP,
+                                              .speed     = GPIO_SPEED_VERY_HIGH,
+                                              .pull      = GPIO_NO_PULL,
+                                              .alternate = GPIO_AF7};
+
+STATIC const GPIO_PinConfig_T uart3Rx      = {.pinNumber = GPIO_PIN_NUM_9,
+                                              .mode      = GPIO_MODE_AF,
+                                              .type      = GPIO_OUTPUT_TYPE_PP,
+                                              .speed     = GPIO_SPEED_VERY_HIGH,
+                                              .pull      = GPIO_NO_PULL,
+                                              .alternate = GPIO_AF7};
 static uint8 ReceivedDataBuffer[1];
 static uint8 ReceivedDataSize = 1;
 
@@ -91,12 +102,45 @@ void USART3_Init(void)
   USART_Init(USART3, &usart3Config);
 }
 
+void USART3_It_Init(void)
+{
+  /* Initialize GPIO pins for USART3 Tx and Rx */
+  GPIO_Init(GPIOD, &uart3Tx);
+  GPIO_Init(GPIOD, &uart3Rx);
+
+  /* Initialize USART3 peripheral */
+  USART_Init(USART3, &usart3ItConfig);
+}
+
+void USART3_TransmitData(uint8 *data, uint8 size)
+{
+  USART_TransmitData(USART3, data, size);
+}
+
+void USART3_ReceiveData(uint8 *data, uint8 size)
+{
+  USART_ReceiveData(USART3, data, size);
+}
+
 void USART3_PollingDemo(void)
 {
-    /* Receive data */
-    USART_ReceiveData(USART3, ReceivedDataBuffer, ReceivedDataSize);
-    /* Echo back received data over USART3 */
-    USART_TransmitData(USART3, ReceivedDataBuffer, ReceivedDataSize);
+  /* Receive data */
+  USART_ReceiveData(USART3, ReceivedDataBuffer, ReceivedDataSize);
+  /* Echo back received data over USART3 */
+  USART_TransmitData(USART3, ReceivedDataBuffer, ReceivedDataSize);
+}
+
+/* Interrupt setup */
+void USART3_IRQHandler(void)
+{
+  /* Check if RXNE flag is set */
+  if (USART3->SR & USART_SR_RXNE)
+  {
+    /* Read received data */
+    uint8 receivedByte = (uint8)(USART3->DR & 0xFFU);
+    /* Echo back received data */
+    USART_TransmitData(USART3, &receivedByte, 1);
+  }
 }
 
 /******************************************************************************

@@ -82,13 +82,14 @@ extern "C"
  ******************************************************************************/
 typedef struct
 {
-  uint32 BaudRate;    /**< Communication Baud Rate */
-  uint8 Mode;         /**< USART Mode: TX, RX, or TX_RX */
-  uint8 WordLength;   /**< Number of data bits */
-  uint8 StopBits;     /**< Number of stop bits */
-  uint8 Parity;       /**< Parity configuration */
-  uint8 HwFlowCtl;    /**< Hardware flow control configuration */
-  uint8 OverSampling; /**< Oversampling mode */
+  uint32 BaudRate;       /**< Communication Baud Rate */
+  uint8 Mode;            /**< USART Mode: TX, RX, or TX_RX */
+  uint8 WordLength;      /**< Number of data bits */
+  uint8 StopBits;        /**< Number of stop bits */
+  uint8 Parity;          /**< Parity configuration */
+  uint8 HwFlowCtl;       /**< Hardware flow control configuration */
+  uint8 OverSampling;    /**< Oversampling mode */
+  uint8 InterruptEnable; /**< Interrupt enable configuration */
 } USART_Config_T;
 
 /******************************************************************************

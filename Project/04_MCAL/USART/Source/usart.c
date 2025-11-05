@@ -12,6 +12,7 @@
 #include "stm32f4xx.h"
 #include "usart.h"
 #include "sysclock.h"
+#include "nvic.h"
 
 /******************************************************************************
  * MACRO DEFINITIONS
@@ -28,6 +29,8 @@
    : (USARTx == UART8)  ? UART8_CLOCK_ENABLE()                                                                         \
                         : (void)0)
 
+// #define DEBUG_USART_INIT
+
 /******************************************************************************
  * TYPE DEFINITIONS
  * Structures, enums, typedefs, etc.
@@ -37,7 +40,11 @@
  * PRIVATE VARIABLES
  * File-scope variables (static)
  ******************************************************************************/
-
+#ifdef DEBUG_USART_INIT
+STATIC uint32 GhPr_UARTCR1_Debug = 0;
+STATIC uint32 GhPr_UARTCR2_Debug = 0;
+STATIC uint32 GhPr_UARTBRR_Debug = 0;
+#endif
 /******************************************************************************
  * PRIVATE CONSTANTS
  * File-scope constants (static const)
@@ -78,7 +85,20 @@ void USART_Init(USART_TypeDef *USARTx, const USART_Config_T *config)
   /* Step 1. Enable clock for USART */
   USARTX_CLK_ENABLE(USARTx);
 
-  /* Step 2. Set USART mode in CR1 register */
+  /* Step 2. Configure interrupt */
+  if (config->InterruptEnable != 0u)
+  {
+    USARTx->CR1 |= USART_CR1_RXNEIE; /* Enable RXNE interrupt */
+    /* Enable NVIC for USART interrupt and set priority */
+    NVICDriver_SetPriority(USART3_IRQn, 1); /* Example priority */
+    NVICDriver_EnableIRQ(USART3_IRQn);
+  }
+  else
+  {
+    USARTx->CR1 &= ~USART_CR1_RXNEIE; /* Disable RXNE interrupt */
+  }
+
+  /* Step 3. Set USART mode in CR1 register */
   USARTx->CR1 &= ~(USART_CR1_TE | USART_CR1_RE); /* Clear TE and RE bits */
   if (USART_MODE_TX == config->Mode)
   {
@@ -93,7 +113,7 @@ void USART_Init(USART_TypeDef *USARTx, const USART_Config_T *config)
     USARTx->CR1 |= (USART_CR1_TE | USART_CR1_RE); /* Enable both */
   }
 
-  /* Step 3. Set wordlength in CR1 register */
+  /* Step 4. Set wordlength in CR1 register */
   if (USART_WORD_LENGTH_9B == config->WordLength)
   {
     USARTx->CR1 |= USART_CR1_M; /* 9 data bits */
@@ -103,7 +123,7 @@ void USART_Init(USART_TypeDef *USARTx, const USART_Config_T *config)
     USARTx->CR1 &= ~USART_CR1_M; /* 8 data bits */
   }
 
-  /* Step 4. Set stop bits in CR2 register */
+  /* Step 5. Set stop bits in CR2 register */
   USARTx->CR2 &= ~USART_CR2_STOP; /* Clear STOP bits */
   switch (config->StopBits)
   {
@@ -122,7 +142,7 @@ void USART_Init(USART_TypeDef *USARTx, const USART_Config_T *config)
     break;
   }
 
-  /* Step 5. Set parity in CR1 register */
+  /* Step 6. Set parity in CR1 register */
   USARTx->CR1 &= ~USART_CR1_PCE; /* Clear PCE bit */
   switch (config->Parity)
   {
@@ -140,7 +160,7 @@ void USART_Init(USART_TypeDef *USARTx, const USART_Config_T *config)
     break;
   }
 
-  /* Step 6. Set hardware flow control in CR3 register */
+  /* Step 7. Set hardware flow control in CR3 register */
   USARTx->CR3 &= ~(USART_CR3_CTSE | USART_CR3_RTSE); /* Clear CTSE and RTSE bits */
   switch (config->HwFlowCtl)
   {
@@ -159,7 +179,7 @@ void USART_Init(USART_TypeDef *USARTx, const USART_Config_T *config)
     break;
   }
 
-  /* Step 7. Set oversampling in CR1 register */
+  /* Step 8. Set oversampling in CR1 register */
   if (USART_OVERSAMPLING_8 == config->OverSampling)
   {
     USARTx->CR1 |= USART_CR1_OVER8; /* Oversampling by 8 */
@@ -169,7 +189,7 @@ void USART_Init(USART_TypeDef *USARTx, const USART_Config_T *config)
     USARTx->CR1 &= ~USART_CR1_OVER8; /* Oversampling by 16 */
   }
 
-  /* Step 8. Set baud rate in BRR register */
+  /* Step 9. Set baud rate in BRR register */
   /* Get USARTx clock frequency */
   if (USARTx == USART1 || USARTx == USART6)
   {
@@ -198,7 +218,13 @@ void USART_Init(USART_TypeDef *USARTx, const USART_Config_T *config)
   USARTx->BRR = (((l_Mantissa << USART_BRR_DIV_Mantissa_Pos) & USART_BRR_DIV_Mantissa_Msk) |
                  ((l_Fraction << USART_BRR_DIV_Fraction_Pos) & USART_BRR_DIV_Fraction_Msk));
 
-  /* Step 9. Enable USART peripheral in CR1 register */
+#ifdef DEBUG_USART_INIT
+  GhPr_UARTCR1_Debug = USARTx->CR1;
+  GhPr_UARTCR2_Debug = USARTx->CR2;
+  GhPr_UARTBRR_Debug = USARTx->BRR;
+#endif
+
+  /* Step 10. Enable USART peripheral in CR1 register */
   USARTx->CR1 |= USART_CR1_UE; /* Enable USART */
 }
 

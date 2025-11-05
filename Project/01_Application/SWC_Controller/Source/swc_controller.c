@@ -71,12 +71,13 @@ STATIC volatile boolean g_IsRxAvailable_b                             = FALSE;
  ******************************************************************************/
 void Controller_Init(void)
 {
-  VFB_USART3_Init();
+  //VFB_USART3_Init();
+  VFB_USART3_It_Init();
 }
 
 void Controller_Runnable(void)
 {
-  VFB_USART3_PollingDemo();
+  //VFB_USART3_PollingDemo();
 }
 
 /******************************************************************************

@@ -51,6 +51,10 @@ extern "C"
  * Public function prototypes
  ******************************************************************************/
 void USART3_Init(void);
+void USART3_It_Init(void);
+void USART3_TransmitData(uint8 *data, uint8 size);
+void USART3_ReceiveData(uint8 *data, uint8 size);
+
 void USART3_PollingDemo(void);
 
 #ifdef __cplusplus

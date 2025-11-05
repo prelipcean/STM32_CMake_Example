@@ -1,10 +1,10 @@
 /******************************************************************************
  * @file                vfb_controller.h
- * @brief               
+ * @brief
  *
- * @details             
+ * @details
  *
- * @note                
+ * @note
  ******************************************************************************/
 
 #ifndef VFB_CONTROLLER_H_
@@ -26,8 +26,14 @@ extern "C"
  * MACRO DEFINITIONS
  * Constants, configurations, and function-like macros
  ******************************************************************************/
-#define VFB_USART3_Init() USART3_Init()
-#define VFB_USART3_PollingDemo() USART3_PollingDemo()
+#define VFB_USART3_Init()                   USART3_Init()
+#define VFB_USART3_It_Init()                USART3_It_Init()
+
+#define VFB_USART3_TransmitData(data, size) USART3_TransmitData(data, size)
+#define VFB_USART3_ReceiveData(data, size)  USART3_ReceiveData(data, size)
+
+#define VFB_USART3_PollingDemo()            USART3_PollingDemo()
+
 
 /******************************************************************************
  * TYPE DEFINITIONS
@@ -53,7 +59,6 @@ extern "C"
  * API FUNCTIONS
  * Public function prototypes
  ******************************************************************************/
-
 
 #ifdef __cplusplus
 }

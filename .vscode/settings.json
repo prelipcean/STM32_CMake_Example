@@ -47,5 +47,6 @@
 
   // Cortex-Debug settings (if you plan to use it)
   "cortex-debug.armToolchainPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.3 rel1/bin",
-  "cortex-debug.openocdPath": "${env:OPENOCD_DIR}/bin/openocd.exe"
+  "cortex-debug.openocdPath": "${env:OPENOCD_DIR}/bin/openocd.exe",
+  "cortex-debug.variableUseNaturalFormat": false
 }
