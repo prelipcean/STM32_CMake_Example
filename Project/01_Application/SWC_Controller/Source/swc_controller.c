@@ -16,9 +16,6 @@
  * MACRO DEFINITIONS
  * Constants, bit masks, register configurations, etc.
  ******************************************************************************/
-#define CONTROLLER_RX_MESSAGE_SIZE 3U
-#define CONTROLLER_TX_MESSAGE_SIZE 3U
-
 /* Reply table entry from a string literal (length without the terminating NUL) */
 #define CONTROLLER_REPLY(cmd, text)                                                                                    \
   {                                                                                                                    \
@@ -59,17 +56,6 @@ STATIC const Controller_Reply_T ga_ControllerReplies[] = {
  * PUBLIC VARIABLES
  * Global variables (extern)
  ******************************************************************************/
-STATIC volatile uint8 ga_ReceivedMessage_u8[CONTROLLER_RX_MESSAGE_SIZE];
-STATIC volatile uint8 ga_SendDownCmd_u8[CONTROLLER_TX_MESSAGE_SIZE]   = "J\n";
-STATIC volatile uint8 ga_SendUpCmd_u8[CONTROLLER_TX_MESSAGE_SIZE]     = "K\n";
-STATIC volatile uint8 ga_SendRightCmd_u8[CONTROLLER_TX_MESSAGE_SIZE]  = "L\n";
-STATIC volatile uint8 ga_SendLeftCmd_u8[CONTROLLER_TX_MESSAGE_SIZE]   = "H\n";
-STATIC volatile uint8 ga_SendActionCmd_u8[CONTROLLER_TX_MESSAGE_SIZE] = "E\n";
-
-STATIC volatile uint8 g_TxMessageSize_u8                              = CONTROLLER_TX_MESSAGE_SIZE;
-STATIC volatile uint8 g_RxIndex_u8                                    = 0U;
-STATIC volatile uint8 g_RxData_u8                                     = 0u;
-STATIC volatile boolean g_IsRxAvailable_b                             = FALSE;
 
 /******************************************************************************
  * PUBLIC CONSTANTS
