@@ -1,6 +1,9 @@
 #ifndef PLATFORM_TYPES_H_
 #define PLATFORM_TYPES_H_
 
+/* Fixed width types: the same sizes on the target and on any host (LP64/LLP64) */
+#include <stdint.h>
+
 /**
  * @name    CPU_Types
  * @details Symbols that specify the CPU type according to its own architecture (8, 16, 32 or 64 bits)
@@ -58,15 +61,15 @@
  * @name   Data_Types
  */
 /**@{*/
-typedef unsigned char         boolean;        /*!<                0 = FALSE .. 1 = TRUE                   */
-typedef unsigned char         uint8;          /*!<                        0 .. 255                        */
-typedef signed char           sint8;          /*!<                     -128 .. +127                       */
-typedef unsigned short        uint16;         /*!<                        0 .. 65535                      */
-typedef signed short          sint16;         /*!<                   -32768 .. +32767                     */
-typedef unsigned long         uint32;         /*!<                        0 .. 4294967295                 */
-typedef signed long           sint32;         /*!<              -2147483648 .. +2147483647                */
-typedef unsigned long long    uint64;         /*!<                        0 .. 18446744073709551615       */
-typedef signed long long      sint64;         /*!<     -9223372036854775808 .. 9223372036854775807        */
+typedef uint8_t               boolean;        /*!<                0 = FALSE .. 1 = TRUE                   */
+typedef uint8_t               uint8;          /*!<                        0 .. 255                        */
+typedef int8_t                sint8;          /*!<                     -128 .. +127                       */
+typedef uint16_t              uint16;         /*!<                        0 .. 65535                      */
+typedef int16_t               sint16;         /*!<                   -32768 .. +32767                     */
+typedef uint32_t              uint32;         /*!<                        0 .. 4294967295                 */
+typedef int32_t               sint32;         /*!<              -2147483648 .. +2147483647                */
+typedef uint64_t              uint64;         /*!<                        0 .. 18446744073709551615       */
+typedef int64_t               sint64;         /*!<     -9223372036854775808 .. 9223372036854775807        */
 typedef float                 float32;        /*!<           -3.4028235e+38 .. +3.4028235e+38             */
 typedef double                float64;        /*!< -2.2250738585072014e-308 .. +1.7976931348623157e+308   */
 /**@}*/

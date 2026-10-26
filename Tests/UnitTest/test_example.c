@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "unity.h"
-#include "fpu.h"
+#include "std_types.h"
 
 void setUp(void)
 {
@@ -14,7 +14,7 @@ void tearDown(void)
 
 void test_example(void)
 {
-    TEST_ASSERT_EQUAL(1, 1);  // Example test
+    TEST_ASSERT_EQUAL(E_OK, 0);  // Example test
 }
 
 // Unity output function implementations
