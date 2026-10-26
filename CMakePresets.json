@@ -41,6 +41,14 @@
       }
     },
     {
+      "name": "release-180mhz",
+      "displayName": "STM32 Release (180 MHz Over-Drive)",
+      "inherits": "release",
+      "cacheVariables": {
+        "SYSCLOCK_OVERDRIVE": "ON"
+      }
+    },
+    {
       "name": "host-tests",
       "displayName": "Host Unit Tests",
       "generator": "Ninja",
@@ -63,6 +71,10 @@
     {
       "name": "debug-180mhz",
       "configurePreset": "debug-180mhz"
+    },
+    {
+      "name": "release-180mhz",
+      "configurePreset": "release-180mhz"
     },
     {
       "name": "host-tests",

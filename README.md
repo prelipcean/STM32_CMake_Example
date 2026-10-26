@@ -87,11 +87,28 @@ openocd -f interface/stlink.cfg -f target/stm32f4x.cfg \
         -c "program build/debug/STM32_F429ZI_Template.elf verify reset exit"
 ```
 
+## VS Code Tasks
+
+`Ctrl/Cmd+Shift+P` → **Tasks: Run Task** (`Ctrl/Cmd+Shift+B` runs the default build). Tasks marked
+*pick preset* ask for `debug`, `release`, `debug-180mhz` or `release-180mhz`.
+
+| Group | Tasks |
+|---|---|
+| Build | Build (Debug) *(default)*, Build (Debug 180MHz), Build / Configure / Rebuild / Clean *(pick preset)*, Build All Presets, Clean All |
+| Test | Unit Tests (Host) |
+| Flash | Build + Flash (Debug), Build + Flash *(pick preset)*, Flash Only *(pick preset, no build)*, Reset Target, Mass Erase |
+| Board | List ST-LINK probes, Identify target, Show clocks, Backup flash (to `backups/`, git-ignored), UART echo test, UART baud scan |
+
+Flash/board tasks need `openocd` on PATH; board tasks also need Python 3 (`tools/stm32_probe.py`,
+standard library only; on Windows the UART tasks need `python -m pip install pyserial`). On Windows
+the tasks run under `cmd.exe`, so `&&` chains work regardless of the default terminal.
+
 ## Debugging (VS Code)
 
 Open the folder and install the recommended extensions (`.vscode/extensions.json`).
-CMake Tools picks up the presets and provides IntelliSense; **F5** builds and starts
-Cortex-Debug with OpenOCD. Tools are taken from `PATH`; machine-specific paths
+CMake Tools picks up the presets and provides IntelliSense. **F5** builds, flashes and starts
+Cortex-Debug with OpenOCD. Launch configurations: *STM32 Debug (168 MHz)*, *STM32 Debug (180 MHz
+Over-Drive)*, and *STM32 Attach (no flash, no reset)* for a target that is already running. Tools are taken from `PATH`; machine-specific paths
 (`cortex-debug.armToolchainPath`, `cortex-debug.openocdPath`,
 `clang-format.executable`) belong in your *user* settings. For the peripheral view
 set `STM32_SVD_DIR` to the folder containing `STM32F429.svd`.

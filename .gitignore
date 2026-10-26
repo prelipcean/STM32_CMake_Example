@@ -44,3 +44,6 @@ _deps/
 # OS specific files
 .DS_Store
 Thumbs.db
+
+# Flash backups made with tools/stm32_probe.py (board tasks)
+backups/
