@@ -17,8 +17,10 @@ don't start from scratch.
 
 ## Hardware
 
-- STM32F429ZI board (LEDs on PG13/PG14, user button on PA0, 8MHz HSE crystal)
-- USART3 on PD8 (TX) / PD9 (RX), 9600 8N1 — RX bytes are echoed back
+- STM32F429I-DISC1 board (LEDs on PG13/PG14, user button on PA0, 8MHz HSE crystal)
+- USART1 on PA9 (TX) / PA10 (RX), 9600 8N1 — RX bytes are echoed back. On the
+  STM32F429I-DISC1 these pins are the ST-LINK/V2-B virtual COM port, so the echo
+  works over the same USB cable (e.g. `/dev/cu.usbmodem*`, `/dev/ttyACM*`, `COMx`)
 - ST-LINK V2/V3 for flashing and debugging
 
 ## Software Requirements

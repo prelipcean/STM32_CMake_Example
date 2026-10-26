@@ -25,7 +25,7 @@ platform_add_module(
 platform_add_module(
   vfb_swc_controller
   INCLUDES 02_VFB/Generated
-  DEPENDS utilities bsp_usart3)
+  DEPENDS utilities bsp_usart1)
 
 # ===================================================================
 # 03_Middlewares / Services Layer
@@ -38,8 +38,8 @@ platform_add_module(
   PRIVATE_DEPENDS cmsis mcal_fpu mcal_sysclock mcal_gpio)
 
 platform_add_module(
-  bsp_usart3
-  SOURCES 03_Middleware/BSP/USART/Source/usart3_bsp.c
+  bsp_usart1
+  SOURCES 03_Middleware/BSP/USART/Source/usart1_bsp.c
   INCLUDES 03_Middleware/BSP/USART/Include
   DEPENDS utilities
   PRIVATE_DEPENDS cmsis mcal_gpio mcal_usart)
