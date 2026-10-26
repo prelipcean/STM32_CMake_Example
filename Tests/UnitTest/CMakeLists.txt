@@ -16,3 +16,7 @@ target_include_directories(
   PRIVATE ${PROJECT_SOURCE_DIR}/Project/01_Application/SWC_Controller/Include
           ${PROJECT_SOURCE_DIR}/Project/02_VFB/Generated
           ${PROJECT_SOURCE_DIR}/Project/03_Middleware/BSP/USART/Include)
+
+# Runtime measurement: CPU load calculation (header only part)
+add_unit_test(test_runtime ${CMAKE_CURRENT_SOURCE_DIR}/test_runtime.c)
+target_include_directories(test_runtime PRIVATE ${PROJECT_SOURCE_DIR}/Project/03_Middleware/Runtime/Include)

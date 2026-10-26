@@ -42,6 +42,41 @@ interrupt (64 byte ring buffer) and handled by `Controller_Runnable()`; the repl
 of commands faster than the replies can be sent drops input (counted in
 `g_Usart1RxOverflowCount_u32`).
 
+## Runtime Measurement
+
+`svc_runtime` (`Project/03_Middleware/Runtime`) measures execution times and CPU load with the
+Cortex-M DWT cycle counter (1 count per core clock, 6 ns at 168 MHz; no timer peripheral, no
+interrupt):
+
+- `Runtime_Start(id)` / `Runtime_Stop(id)` around a runnable: last/min/max cycles in
+  `ga_RuntimeStats[id]`. Add an ID to `Runtime_Id_T` for each section you want to time.
+- `Runtime_Idle()` ends every main loop iteration: the core sleeps (`WFI`) until the next interrupt
+  (SysTick every 1 ms, UART RX, ...). Time awake, ISRs included, is busy time.
+  `g_RuntimeCpuLoad_u32` is the load of the last 1 s window and `g_RuntimeCpuLoadMax_u32` the
+  highest since reset, both in 0.01 % (`2176` = 21.76 %).
+
+Read them on the board by name (VS Code task *Board: Read variable*, or):
+
+```bash
+python3 tools/stm32_probe.py read --elf build/debug/STM32_F429ZI_Template.elf \
+  --symbol g_RuntimeCpuLoad_u32 g_RuntimeCpuLoadMax_u32 ga_RuntimeStats
+```
+
+Measured on the STM32F429I-DISC1 (Debug, 168 MHz):
+
+| Situation | CPU load |
+|---|---|
+| Idle (SysTick + heartbeat only) | 0.27 % |
+| `K` commands at 20 / 50 / 100 / 200 per second | 4.6 / 11.1 / 21.7 / 42.6 % |
+
+Each `UP\r\n` reply costs ~2.1 ms, because replies are sent with polling TX: at 9600 baud the
+CPU waits ~1.04 ms per byte once the USART data and shift registers are full. Interrupt or DMA
+driven TX would take this to almost zero. `Controller_Runnable` takes 0.7 µs when there is
+nothing to do.
+
+Reading variables halts the core for ~70 ms; UART bytes received during that time are lost
+(USART overrun). This affects the measurement only, not normal operation.
+
 ## Software Requirements
 
 | Tool | Version | Notes |

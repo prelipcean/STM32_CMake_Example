@@ -10,7 +10,7 @@
 platform_add_module(
   app_main
   SOURCES 01_Application/Main/Source/main.c
-  PRIVATE_DEPENDS bsp_board swc_controller)
+  PRIVATE_DEPENDS bsp_board svc_runtime swc_controller)
 
 platform_add_module(
   swc_controller
@@ -36,6 +36,13 @@ platform_add_module(
   INCLUDES ${BOARD_BSP_DIR}
   DEPENDS utilities
   PRIVATE_DEPENDS cmsis mcal_fpu mcal_sysclock mcal_gpio mcal_systick)
+
+platform_add_module(
+  svc_runtime
+  SOURCES 03_Middleware/Runtime/Source/runtime.c
+  INCLUDES 03_Middleware/Runtime/Include
+  DEPENDS utilities
+  PRIVATE_DEPENDS cmsis mcal_systick)
 
 platform_add_module(
   bsp_usart1
