@@ -2,104 +2,62 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "STM32 Build (Debug)",
-      "type": "shell",
-      "command": "cmake --build build --config Debug",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "problemMatcher": ["$gcc"],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "STM32 Build (Release)",
-      "type": "shell",
-      "command": "cmake --build build --config Release",
-      "group": "build",
-      "problemMatcher": ["$gcc"],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
       "label": "STM32 Configure (Debug)",
       "type": "shell",
-      "command": "cmake -B build -GNinja -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-toolchain.cmake -DCMAKE_BUILD_TYPE=Debug",
-      "problemMatcher": [],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
+      "command": "cmake --preset debug",
+      "problemMatcher": []
+    },
+    {
+      "label": "STM32 Build (Debug)",
+      "type": "shell",
+      "command": "cmake --preset debug && cmake --build --preset debug",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$gcc"]
     },
     {
       "label": "STM32 Configure (Release)",
       "type": "shell",
-      "command": "cmake -B build -GNinja -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-toolchain.cmake -DCMAKE_BUILD_TYPE=Release",
-      "problemMatcher": [],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
+      "command": "cmake --preset release",
+      "problemMatcher": []
     },
     {
-      "label": "STM32 Clean Build",
+      "label": "STM32 Build (Release)",
       "type": "shell",
-      "command": "cmake --build build --target clean",
-      "problemMatcher": [],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
-    },
-    {
-      "label": "STM32 Clean All",
-      "type": "shell",
-      "command": "if (Test-Path -Path build) { Remove-Item -Recurse -Force build }",
-      "problemMatcher": [],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
+      "command": "cmake --preset release && cmake --build --preset release",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
     },
     {
       "label": "STM32 Build All",
       "dependsOrder": "sequence",
-      "dependsOn": [
-        "STM32 Configure (Debug)",
-        "STM32 Build (Debug)",
-        "STM32 Configure (Release)",
-        "STM32 Build (Release)"
-      ],
+      "dependsOn": ["STM32 Build (Debug)", "STM32 Build (Release)"],
       "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Unit Tests (Host)",
+      "type": "shell",
+      "command": "cmake --preset host-tests && cmake --build --preset host-tests && ctest --preset host-tests",
+      "group": "test",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "STM32 Clean Build",
+      "type": "shell",
+      "command": "cmake --build --preset debug --target clean",
+      "problemMatcher": []
+    },
+    {
+      "label": "STM32 Clean All",
+      "type": "shell",
+      "command": "cmake -E rm -rf build",
+      "problemMatcher": []
+    },
+    {
+      "label": "STM32 Flash (OpenOCD)",
+      "type": "shell",
+      "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c \"program build/debug/STM32_F429ZI_Template.elf verify reset exit\"",
+      "dependsOn": "STM32 Build (Debug)",
       "problemMatcher": []
     }
   ]

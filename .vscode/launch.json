@@ -7,7 +7,7 @@
     {
       "name": "STM32F429 Debug (ST-Link)",
       "cwd": "${workspaceFolder}",
-      "executable": "${workspaceFolder}/build/STM32_F429ZI_Template",
+      "executable": "${workspaceFolder}/build/debug/STM32_F429ZI_Template.elf",
       "request": "launch",
       "type": "cortex-debug",
       "servertype": "openocd",
@@ -15,10 +15,10 @@
       "interface": "swd",
       "runToEntryPoint": "SystemInit",
       "preLaunchTask": "STM32 Build (Debug)",
-      "svdFile": "${env:STM32_CUBE_F4}/Repository/STM32Cube_FW_F4_V1.27.1/CPU/SVD/STM32F429.svd",
+      // Optional: path to STM32F429.svd for the peripheral view, e.g. from the
+      // STM32CubeF4 package; set the STM32_SVD_DIR environment variable
+      "svdFile": "${env:STM32_SVD_DIR}/STM32F429.svd",
       "configFiles": ["interface/stlink.cfg", "target/stm32f4x.cfg"],
-      "openOCDLaunchCommands": ["transport select hla_swd"],
-      "postRestartCommands": ["break main", "continue"],
       "showDevDebugOutput": "parsed"
     }
   ]
