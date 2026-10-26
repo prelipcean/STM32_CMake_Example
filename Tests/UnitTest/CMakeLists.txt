@@ -1,16 +1,22 @@
-cmake_minimum_required(VERSION 3.13)
-
 # Include Unity configuration
-include(${CMAKE_SOURCE_DIR}/cmake/unit_tests.cmake)
-
-# Enable testing
-enable_testing()
-
-# Create test runner directory
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/runners)
+include(${PROJECT_SOURCE_DIR}/cmake/unit_tests.cmake)
 
 # Example test (you can add more tests here)
+add_unit_test(test_example ${CMAKE_CURRENT_SOURCE_DIR}/test_example.c)
+
+# Platform types and register utility macros
+add_unit_test(test_std_types ${CMAKE_CURRENT_SOURCE_DIR}/test_std_types.c)
+
+# SWC Controller: command replies, with the USART1 BSP faked in the test
 add_unit_test(
-    test_example
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_example.c
-)
+  test_swc_controller ${CMAKE_CURRENT_SOURCE_DIR}/test_swc_controller.c
+  ${PROJECT_SOURCE_DIR}/Project/01_Application/SWC_Controller/Source/swc_controller.c)
+target_include_directories(
+  test_swc_controller
+  PRIVATE ${PROJECT_SOURCE_DIR}/Project/01_Application/SWC_Controller/Include
+          ${PROJECT_SOURCE_DIR}/Project/02_VFB/Generated
+          ${PROJECT_SOURCE_DIR}/Project/03_Middleware/BSP/USART/Include)
+
+# Runtime measurement: CPU load calculation (header only part)
+add_unit_test(test_runtime ${CMAKE_CURRENT_SOURCE_DIR}/test_runtime.c)
+target_include_directories(test_runtime PRIVATE ${PROJECT_SOURCE_DIR}/Project/03_Middleware/Runtime/Include)

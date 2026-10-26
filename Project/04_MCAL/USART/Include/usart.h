@@ -20,6 +20,7 @@ extern "C"
  * List of required header files
  ******************************************************************************/
 #include "std_types.h"
+#include "stm32f4xx.h"
 
 /******************************************************************************
  * MACRO DEFINITIONS
@@ -112,7 +113,7 @@ typedef struct
  * Public function prototypes
  ******************************************************************************/
 void USART_Init(USART_TypeDef *USARTx, const USART_Config_T *config);
-void USART_TransmitData(USART_TypeDef *USARTx, uint8 *data, uint8 size);
+void USART_TransmitData(USART_TypeDef *USARTx, const uint8 *data, uint8 size);
 void USART_ReceiveData(USART_TypeDef *USARTx, uint8 *data, uint8 size);
 
 #ifdef __cplusplus

@@ -14,21 +14,18 @@
     "stm32f429xx.h": "c"
   },
 
-  // Clang-Format settings
-  "clang-format.executable": "C:/Program Files/LLVM/bin/clang-format.exe",
+  // Clang-Format settings (clang-format is taken from PATH; set
+  // "clang-format.executable" in your *user* settings if it is elsewhere)
   "[cpp]": {
     "editor.defaultFormatter": "xaver.clang-format"
   },
   "[c]": {
     "editor.defaultFormatter": "xaver.clang-format"
   },
-  // CMake configuration
+
+  // CMake configuration: everything comes from CMakePresets.json
+  "cmake.useCMakePresets": "always",
   "cmake.configureOnOpen": true,
-  "cmake.configureArgs": [
-    "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/cmake/arm-none-eabi-toolchain.cmake"
-  ],
-  "cmake.buildDirectory": "${workspaceFolder}/build",
-  "cmake.generator": "Ninja",
 
   // Editor settings for C development
   "editor.rulers": [80, 120],
@@ -37,16 +34,15 @@
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
 
-  // C/C++ specific settings
-  "C_Cpp.default.includePath": ["${workspaceFolder}/**"],
-  "C_Cpp.default.defines": ["STM32", "STM32F4", "STM32F429xx", "STM32F429ZITx"],
-  "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 100 }",
-  "C_Cpp.default.cStandard": "c11",
+  // C/C++ IntelliSense: use the compile commands of the active CMake preset
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "C_Cpp.default.cStandard": "gnu11",
   "C_Cpp.enhancedColorization": "enabled",
   "C_Cpp.suggestSnippets": true,
 
-  // Cortex-Debug settings (if you plan to use it)
-  "cortex-debug.armToolchainPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.3 rel1/bin",
-  "cortex-debug.openocdPath": "${env:OPENOCD_DIR}/bin/openocd.exe",
-  "cortex-debug.variableUseNaturalFormat": false
+  // Cortex-Debug: arm-none-eabi-gdb and openocd are taken from PATH. If they
+  // are not on PATH set "cortex-debug.armToolchainPath" and
+  // "cortex-debug.openocdPath" in your *user* settings (machine specific).
+  "cortex-debug.variableUseNaturalFormat": false,
+  "terminal.integrated.stickyScroll.enabled": false
 }

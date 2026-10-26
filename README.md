@@ -1,203 +1,232 @@
 # STM32_CMake_Example
 
-A bare-metal example project for STM32F429ZI microcontroller using CMake as the build system. This project demonstrates how to set up a professional-grade embedded project with proper clock configuration, FPU usage, and GPIO control.
+A bare-metal "catapult" platform for STM32 microcontrollers (currently the
+STM32F429ZI), built with CMake. It gives a new project a layered structure,
+register-level drivers, a cross-platform build and host unit tests, so you
+don't start from scratch.
 
 ## Features
 
-- **Clock Configuration**: System clock setup for 168MHz operation (180MHz with overdrive)
-- **FPU Support**: Hardware floating-point unit configuration
-- **GPIO Control**: LED blinking example using the onboard LEDs
-- **CMake Build System**: Modern, cross-platform build configuration
-- **CMSIS Integration**: Uses STM32F4xx CMSIS for hardware access
+- **Layered architecture**: Application → VFB → Middleware/BSP → MCAL, each module
+  a separate CMake target that only sees the headers it depends on
+- **Clock configuration**: HSE + PLL, 168MHz (180MHz with Over-Drive, `-DSYSCLOCK_OVERDRIVE=ON`)
+- **Drivers**: FPU, NVIC, SYSCFG, GPIO (incl. EXTI), USART (polling + RX interrupt)
+- **Cross-platform build**: Windows, Linux and macOS with the same commands (CMake presets)
+- **Unit tests** on the host with [Unity](https://github.com/ThrowTheSwitch/Unity)
+- **CI**: GitHub Actions builds the firmware and runs the tests on all three OSes
 
-## Hardware Requirements
+## Hardware
 
-- STM32F429ZI Development Board
-- ST-LINK V2/V3 programmer (integrated on most dev boards)
-- USB cable for power and programming
+- STM32F429I-DISC1 board (LEDs on PG13/PG14, user button on PA0, 8MHz HSE crystal)
+- USART1 on PA9 (TX) / PA10 (RX), 9600 8N1, see *UART commands* below. On the
+  STM32F429I-DISC1 these pins are the ST-LINK/V2-B virtual COM port, so the echo
+  works over the same USB cable (e.g. `/dev/cu.usbmodem*`, `/dev/ttyACM*`, `COMx`)
+- ST-LINK V2/V3 for flashing and debugging
+
+## UART Commands
+
+Open the ST-LINK serial port at **9600 8N1** (e.g. `python -m serial.tools.miniterm <port> 9600`,
+the VS Code Serial Monitor, or `screen <port> 9600`) and type:
+
+| Key | Reply |
+|---|---|
+| `H` / `h` | `LEFT` |
+| `J` / `j` | `DOWN` |
+| `K` / `k` | `UP` |
+| `L` / `l` | `RIGHT` |
+| anything else | echoed back unchanged |
+
+Replies end with `\r\n` and arrive within ~6 ms. Received bytes are queued by the USART1 RX
+interrupt (64 byte ring buffer) and handled by `Controller_Runnable()`; the reply table is
+`ga_ControllerReplies` in `swc_controller.c`. Replies are sent with polling TX, so a sustained burst
+of commands faster than the replies can be sent drops input (counted in
+`g_Usart1RxOverflowCount_u32`).
+
+## Runtime Measurement
+
+`svc_runtime` (`Project/03_Middleware/Runtime`) measures execution times and CPU load with the
+Cortex-M DWT cycle counter (1 count per core clock, 6 ns at 168 MHz; no timer peripheral, no
+interrupt):
+
+- `Runtime_Start(id)` / `Runtime_Stop(id)` around a runnable: last/min/max cycles in
+  `ga_RuntimeStats[id]`. Add an ID to `Runtime_Id_T` for each section you want to time.
+- `Runtime_Idle()` ends every main loop iteration: the core sleeps (`WFI`) until the next interrupt
+  (SysTick every 1 ms, UART RX, ...). Time awake, ISRs included, is busy time.
+  `g_RuntimeCpuLoad_u32` is the load of the last 1 s window and `g_RuntimeCpuLoadMax_u32` the
+  highest since reset, both in 0.01 % (`2176` = 21.76 %).
+
+Read them on the board by name (VS Code task *Board: Read variable*, or):
+
+```bash
+python3 tools/stm32_probe.py read --elf build/debug/STM32_F429ZI_Template.elf \
+  --symbol g_RuntimeCpuLoad_u32 g_RuntimeCpuLoadMax_u32 ga_RuntimeStats
+```
+
+Measured on the STM32F429I-DISC1 (Debug, 168 MHz):
+
+| Situation | CPU load |
+|---|---|
+| Idle (SysTick + heartbeat only) | 0.27 % |
+| `K` commands at 20 / 50 / 100 / 200 per second | 4.6 / 11.1 / 21.7 / 42.6 % |
+
+Each `UP\r\n` reply costs ~2.1 ms, because replies are sent with polling TX: at 9600 baud the
+CPU waits ~1.04 ms per byte once the USART data and shift registers are full. Interrupt or DMA
+driven TX would take this to almost zero. `Controller_Runnable` takes 0.7 µs when there is
+nothing to do.
+
+Reading variables halts the core for ~70 ms; UART bytes received during that time are lost
+(USART overrun). This affects the measurement only, not normal operation.
 
 ## Software Requirements
 
-- CMake (version 3.15 or higher)
-- ARM GCC Toolchain (arm-none-eabi-gcc)
-- Ninja or Make build system
-- OpenOCD for programming (optional)
+| Tool | Version | Notes |
+|---|---|---|
+| [Arm GNU Toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads) (`arm-none-eabi`) | 13.x / 14.x | found automatically, see below |
+| CMake | ≥ 3.21 | |
+| Ninja | any | |
+| Host C compiler | GCC, Clang or MSVC | only for unit tests |
+| OpenOCD | ≥ 0.11 | optional, flashing/debugging |
+
+The toolchain is located in this order:
+
+1. `-DARM_TOOLCHAIN_DIR=<path>` or the `ARM_TOOLCHAIN_DIR` environment variable
+2. `arm-none-eabi-gcc` on `PATH`
+3. Default install folders (newest first):
+   - Windows: `C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/*/bin`, STM32CubeIDE
+   - macOS: `/Applications/ArmGNUToolchain/*/arm-none-eabi/bin`, Homebrew
+   - Linux: `/opt/gcc-arm-none-eabi*/bin`, `/opt/arm-gnu-toolchain-*/bin`, `/usr/bin`
+
+## Building
+
+The same commands work on every OS:
+
+```bash
+# Firmware
+cmake --preset debug              # or: release
+cmake --build --preset debug
+
+# Unit tests (host)
+cmake --preset host-tests
+cmake --build --preset host-tests
+ctest --preset host-tests
+```
+
+### Build options
+
+| CMake option | Default | Effect |
+|---|---|---|
+| `SYSCLOCK_OVERDRIVE` | `OFF` | `ON`: SYSCLK 180MHz (Voltage Scale 1 + Over-Drive), APB1/APB2 45/90MHz. The PLL48 clock (USB/SDIO) becomes 45MHz. `OFF`: 168MHz, APB1/APB2 42/84MHz, PLL48 = 48MHz. |
+| `PLATFORM_BOARD` | `STM32F429ZI` | Board file in `cmake/boards/` |
+
+Use the `debug-180mhz` preset, or add the option to any preset:
+
+```bash
+cmake --preset debug-180mhz && cmake --build --preset debug-180mhz
+cmake --preset release -DSYSCLOCK_OVERDRIVE=ON
+```
+
+Outputs are in `build/<preset>/`:
+
+- `STM32_F429ZI_Template.elf` - ELF file for debugging
+- `STM32_F429ZI_Template.hex` / `.bin` - images for flashing
+- `STM32_F429ZI_Template.map` - linker map
+
+On Windows, run the unit tests from a "Developer PowerShell for VS" (MSVC) or
+with MinGW/MSYS2 `gcc` on `PATH`.
+
+## Programming
+
+```bash
+openocd -f interface/stlink.cfg -f target/stm32f4x.cfg \
+        -c "program build/debug/STM32_F429ZI_Template.elf verify reset exit"
+```
+
+## VS Code Tasks
+
+`Ctrl/Cmd+Shift+P` → **Tasks: Run Task** (`Ctrl/Cmd+Shift+B` runs the default build). Tasks marked
+*pick preset* ask for `debug`, `release`, `debug-180mhz` or `release-180mhz`.
+
+| Group | Tasks |
+|---|---|
+| Build | Build (Debug) *(default)*, Build (Debug 180MHz), Build / Configure / Rebuild / Clean *(pick preset)*, Build All Presets, Clean All |
+| Test | Unit Tests (Host) |
+| Flash | Build + Flash (Debug), Build + Flash *(pick preset)*, Flash Only *(pick preset, no build)*, Reset Target, Mass Erase |
+| Board | List ST-LINK probes, Identify target, Show clocks, Read variable *(by name, using the ELF of the flashed build)*, Backup flash (to `backups/`, git-ignored), UART echo test, UART baud scan |
+
+Flash/board tasks need `openocd` on PATH; board tasks also need Python 3 (`tools/stm32_probe.py`,
+standard library only; on Windows the UART tasks need `python -m pip install pyserial`). On Windows
+the tasks run under `cmd.exe`, so `&&` chains work regardless of the default terminal.
+
+## Debugging (VS Code)
+
+Open the folder and install the recommended extensions (`.vscode/extensions.json`).
+CMake Tools picks up the presets and provides IntelliSense. **F5** builds, flashes and starts
+Cortex-Debug with OpenOCD. Launch configurations: *STM32 Debug (168 MHz)*, *STM32 Debug (180 MHz
+Over-Drive)*, and *STM32 Attach (no flash, no reset)* for a target that is already running. Tools are taken from `PATH`; machine-specific paths
+(`cortex-debug.armToolchainPath`, `cortex-debug.openocdPath`,
+`clang-format.executable`) belong in your *user* settings. For the peripheral view
+set `STM32_SVD_DIR` to the folder containing `STM32F429.svd`.
 
 ## Project Structure
 
 ```
-STM32_CMake_Example/
-├── Application/
-│   ├── Include/        # Application headers
-│   └── Source/         # Application source files
-├── CMSIS/              # STM32F4xx CMSIS files
-├── CMakeLists.txt      # Main CMake configuration
-├── startup_stm32f429zitx.s  # Startup assembly
-└── STM32F429ZITX_FLASH.ld   # Linker script
+├── CMakeLists.txt              # Top level: options, flags, firmware executable
+├── CMakePresets.json           # debug / release / host-tests
+├── cmake/
+│   ├── arm-none-eabi-toolchain.cmake
+│   ├── platform.cmake          # platform_add_module() helper
+│   ├── boards/STM32F429ZI.cmake  # CPU flags, defines, startup, linker script
+│   └── unit_tests.cmake        # Unity + add_unit_test()
+├── Project/
+│   ├── CMakeLists.txt          # Module list, layer by layer
+│   ├── 01_Application/         # main.c, software components (SWC_*)
+│   ├── 02_VFB/                 # Virtual function bus (SWC <-> BSP mapping)
+│   ├── 03_Middleware/          # BSP (board, startup, linker), CDD, OS
+│   ├── 04_MCAL/                # CMSIS + register-level drivers
+│   ├── XX_Libraries/           # Third party libraries
+│   └── YY_Utilities/           # std_types, platform_types, reg_util
+├── Tests/UnitTest/             # Host unit tests and mocks
+├── Templates/                  # .c/.h file templates
+└── Documentation/
 ```
 
-## Building the Project
+### Startup sequence
 
-1. Create a build directory:
-   ```bash
-   mkdir build
-   cd build
-   ```
+`Reset_Handler` → `SystemInit()` (FPU only; runs before `.data`/`.bss` are
+initialized, so it must not write globals) → `.data`/`.bss` init → `main()` →
+`Board_Init()` (clocks, LEDs, button) → `Controller_Init()` → main loop.
 
-2. Configure with CMake:
-   ```bash
-   # For Debug build
-   cmake -DCMAKE_BUILD_TYPE=Debug -G "Ninja" ..
+## Extending the Platform
 
-   # For Release build
-   cmake -DCMAKE_BUILD_TYPE=Release -G "Ninja" ..
-   ```
+**New module** - add the sources and register it in `Project/CMakeLists.txt`:
 
-3. Build the project:
-   ```bash
-   ninja
-   # or
-   cmake --build .
-   ```
-
-The output files will be created in the build directory:
-- `STM32_CMake_Example.elf` - ELF file for debugging
-- `STM32_CMake_Example.hex` - HEX file for flashing
-- `STM32_CMake_Example.bin` - Binary file for flashing
-
-## Programming
-
-Using OpenOCD:
-```bash
-openocd -f board/stm32f429discovery.cfg -c "program build/STM32_CMake_Example.elf verify reset exit"
+```cmake
+platform_add_module(
+  mcal_spi
+  SOURCES 04_MCAL/SPI/Source/spi.c
+  INCLUDES 04_MCAL/SPI/Include
+  DEPENDS utilities cmsis          # needed by spi.h
+  PRIVATE_DEPENDS mcal_gpio)       # needed only by spi.c
 ```
 
-## Features Demonstrated
+It is linked into the firmware automatically. Use the files in `Templates/` for
+new sources/headers.
 
-1. **Clock Configuration**:
-   - HSE as clock source
-   - PLL configuration for 168MHz operation
-   - APB1 at 42MHz, APB2 at 84MHz
-   - Optional 180MHz with overdrive mode
+**New board** - add `cmake/boards/<BOARD>.cmake` (see `STM32F429ZI.cmake`) and
+configure with `-DPLATFORM_BOARD=<BOARD>`.
 
-2. **FPU Usage**:
-   - Hardware FPU enabled
-   - Proper initialization sequence
+**New unit test** - add `Tests/UnitTest/test_<name>.c` (see `test_std_types.c`) and
+register it in `Tests/UnitTest/CMakeLists.txt`:
 
-3. **GPIO Control**:
-   - Green LED (PG13) blinking in normal operation
-   - Red LED (PG14) flashing on clock error
-
-## Debugging
-
-The project can be debugged using:
-- OpenOCD + GDB
-- ST-Link + GDB
-- Visual Studio Code with Cortex-Debug extension
-
-## VS Code extensions installed
-
-13xforever.language-x86-64-assembly
-bbenoist.doxygen
-cheshirekow.cmake-format
-esbenp.prettier-vscode
-github.copilot
-github.copilot-chat
-jeff-hykin.better-cpp-syntax
-marus25.cortex-debug
-mcu-debug.debug-tracker-vscode
-mcu-debug.memory-view
-mcu-debug.peripheral-viewer
-mcu-debug.rtos-views
-ms-vscode-remote.remote-containers
-ms-vscode-remote.remote-ssh
-ms-vscode-remote.remote-ssh-edit
-ms-vscode-remote.remote-wsl
-ms-vscode-remote.vscode-remote-extensionpack
-ms-vscode.cmake-tools
-ms-vscode.cpptools
-ms-vscode.cpptools-extension-pack
-ms-vscode.cpptools-themes
-ms-vscode.hexeditor
-ms-vscode.remote-explorer
-ms-vscode.remote-server
-sanaajani.taskrunnercode
-usernamehw.errorlens
-xaver.clang-format
-
-## Clang
-
-https://github.com/motine/cppstylelineup
-
-.\clang-format.exe --dump-config --style=Microsoft > .clang-format
-
-
-## Unit Testing
-
-The project includes a unit testing framework using Unity. Tests are built using MinGW GCC to run on the host machine.
-
-### Prerequisites
-
-- MSYS2 with UCRT64 environment
-- GCC and Make from MSYS2 UCRT64 (`C:/msys64/ucrt64/bin`)
-
-### Building and Running Tests
-
-```powershell
-# Verify MinGW Make is available
-Test-Path "C:/msys64/ucrt64/bin/mingw32-make.exe"
-
-# Clean and create build directory
-Remove-Item -Recurse -Force build_tests
-mkdir build_tests
-cd build_tests
-
-# Configure CMake with explicit compiler paths
-cmake -G "MinGW Makefiles" `
-    -DCMAKE_C_COMPILER="C:/msys64/ucrt64/bin/gcc.exe" `
-    -DCMAKE_CXX_COMPILER="C:/msys64/ucrt64/bin/g++.exe" `
-    -DCMAKE_MAKE_PROGRAM="C:/msys64/ucrt64/bin/mingw32-make.exe" `
-    -DBUILD_TESTS=ON ..
-
-# Build the tests
-cmake --build .
-
-# Run the tests
-cd tests
-./test_example.exe
+```cmake
+add_unit_test(test_<name> ${CMAKE_CURRENT_SOURCE_DIR}/test_<name>.c
+              <production sources under test>...)
 ```
 
-### Adding New Tests
+## Code Style
 
-1. Create a new test file in the `tests` directory
-2. Include Unity and required headers:
-   ```c
-   #include <stdio.h>      // For Unity output functions
-   #include "unity.h"      // Unity test framework
-   #include "your_header.h" // Header to test
-   ```
-3. Implement test cases following Unity's pattern:
-   ```c
-   void setUp(void) {
-       // Setup for each test
-   }
-
-   void tearDown(void) {
-       // Cleanup after each test
-   }
-
-   void test_your_function(void) {
-       // Your test code
-       TEST_ASSERT_EQUAL(expected, actual);
-   }
-
-   int main(void) {
-       UNITY_BEGIN();
-       RUN_TEST(test_your_function);
-       return UNITY_END();
-   }
-   ```
-4. Add the test to `tests/CMakeLists.txt` using the `add_unit_test()` function
+Formatting is defined in `.clang-format` (see
+`Documentation/Clang-Format_Configuration_Explained.txt`).
 
 ## Contributing
 

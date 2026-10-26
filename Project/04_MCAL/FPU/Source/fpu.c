@@ -92,6 +92,10 @@ void Fpu_Enable(void)
   SCB->CPACR |= (1u << 21u);
   SCB->CPACR |= (1u << 22u); /* CP11 full access */
   SCB->CPACR |= (1u << 23u);
+
+  /* Make sure the new access rights are in effect before any FPU instruction */
+  __DSB();
+  __ISB();
 }
 
 /******************************************************************************

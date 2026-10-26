@@ -19,11 +19,10 @@
 // ============================================================================
 
 /**
- * @brief Uncomment this line to configure the system clock for 180MHz.
- * This requires Voltage Scale 1 and Over-Drive mode.
- * If commented, the clock will be configured for 168MHz (Voltage Scale 1).
+ * @brief SYSCLOCK_OVERDRIVE selects 180MHz (Voltage Scale 1 + Over-Drive mode),
+ * otherwise the clock is configured for 168MHz (Voltage Scale 1).
+ * Set it from CMake: -DSYSCLOCK_OVERDRIVE=ON (see cmake/boards/<board>.cmake).
  */
-//#define OVERDRIVE
 
 /**
  * @brief Define the external crystal (HSE) frequency in Hz.
@@ -33,12 +32,11 @@
 #define HSE_VALUE 8000000UL
 
 /**
- * @brief VCO input frequency in MHz (HSE_VALUE / PLLM divider).
- * Calculated here as HSE_VALUE / 1, assuming PLLM is set to 8 in the PLL configuration
- * to get a 1MHz input to the VCO (VCO_IN = HSE_VALUE / PLLM).
- * This value is used for PLL mathematical calculations (e.g., PLL_VCO = VCO_IN * PLLN).
+ * @brief PLLM input divider: HSE_VALUE / 1MHz, so the VCO input is always 1MHz
+ * (VCO_IN = HSE_VALUE / PLLM). For an 8MHz HSE this gives PLLM = 8.
+ * The PLLN/PLLP values below assume this 1MHz VCO input.
  */
-#define VCO_IN (HSE_VALUE / 1000000UL)
+#define PLLM_VALUE (HSE_VALUE / 1000000UL)
 
 /**
  * @brief Timeout for oscillator startup (in loop iterations).
@@ -72,7 +70,8 @@ uint32 SysClock_GetSYSCLK(void)
 {
   uint32 sysclk = 0;
   uint32 source = RCC->CFGR & RCC_CFGR_SWS;
-  
+  uint32 pllm, plln, pllp, pllin;
+
   switch (source)
   {
     case RCC_CFGR_SWS_HSI:
@@ -82,8 +81,13 @@ uint32 SysClock_GetSYSCLK(void)
       sysclk = HSE_VALUE;
       break;
     case RCC_CFGR_SWS_PLL:
-      // TODO: Calculate PLL frequency based on source and multipliers
-      sysclk = 168000000; // Default to 168MHz
+      /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLLM) * PLLN
+         SYSCLK = PLL_VCO / PLLP */
+      pllm  = RCC->PLLCFGR & RCC_PLLCFGR_PLLM;
+      plln  = (RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> RCC_PLLCFGR_PLLN_Pos;
+      pllp  = (((RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >> RCC_PLLCFGR_PLLP_Pos) + 1U) * 2U;
+      pllin = (RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC) ? HSE_VALUE : HSI_VALUE;
+      sysclk = (pllin / pllm) * plln / pllp;
       break;
     default:
       sysclk = HSI_VALUE;
@@ -165,7 +169,7 @@ uint32 SysClock_GetPCLK2(void)
  * This variable is used by SysTick_Config() and other HAL/LL functions.
  * It MUST be updated whenever the core clock changes.
  */
-uint32 SystemCoreClock = HSE_VALUE;
+uint32 SystemCoreClock = HSI_VALUE; /* Reset clock source is HSI */
 
 static volatile uint32 timeout = OSC_STARTUP_TIMEOUT;
 
@@ -205,38 +209,12 @@ uint8 SysClock_Setup(void)
   REG_SET_BIT(pRCC->APB1ENR, RCC_APB1ENR_PWREN_Pos);
 
   /*
-   * 4. Configure Voltage Scaling and Over-Drive
-   * This MUST be done before increasing the clock speed.
-   * Scale 1 (VOS=0b11) is required for > 168MHz.
-   * Over-Drive is required for > 168MHz (i.e., 180MHz).
+   * 4. Configure Voltage Scaling
+   * This MUST be done before the PLL is enabled (VOS takes effect at PLLON).
+   * Scale 1 (VOS=0b11) is required for > 144MHz and for Over-Drive (180MHz).
+   * Over-Drive itself is enabled after the PLL is locked, see step 9b.
    */
-#ifdef OVERDRIVE
-  // --- 180MHz Configuration ---
-  // Set VOS to 0b11 (Scale 1 mode)
   REG_SET_VAL(pPWR->CR, 0x03U, 0x03, PWR_CR_VOS_Pos);
-  // Activate over-drive mode
-  REG_SET_BIT(pPWR->CR, PWR_CR_ODEN_Pos);
-  // Wait for over-drive ready with timeout
-  timeout = OSC_STARTUP_TIMEOUT;
-  while (REG_READ_BIT(pPWR->CSR, PWR_CSR_ODRDY_Pos) == 0)
-  {
-    if (timeout-- == 0) return E_NOT_OK; // Failure
-  }
-  // Over-drive switch enable
-  REG_SET_BIT(pPWR->CR, PWR_CR_ODSWEN_Pos);
-  // Wait for over-drive switch to be ready
-  timeout = OSC_STARTUP_TIMEOUT;
-  while (REG_READ_BIT(pPWR->CSR, PWR_CSR_ODSWRDY_Pos) == 0)
-  {
-    if (timeout-- == 0) return E_NOT_OK; // Failure
-  }
-#else
-  // --- 168MHz Configuration ---
-  // Set VOS to 0b11 (Scale 1 mode).
-  // While Scale 2 is *technically* ok for 168MHz, Scale 1 gives
-  // more margin and is required if 180MHz is ever used.
-  REG_SET_VAL(pPWR->CR, 0x03U, 0x03, PWR_CR_VOS_Pos);
-#endif
 
   /*
    * 5. Program FLASH Wait States (Latency)
@@ -276,7 +254,7 @@ uint8 SysClock_Setup(void)
    * - PPRE1: APB1 Prescaler (PCLK1)
    * - PPRE2: APB2 Prescaler (PCLK2)
    */
-#ifdef OVERDRIVE
+#ifdef SYSCLOCK_OVERDRIVE
   // Target: SYSCLK = 180MHz
   REG_SET_VAL(pRCC->CFGR, 0u, 0xFu, RCC_CFGR_HPRE_Pos);  // AHB prescaler = 1. HCLK = 180MHz
   REG_SET_VAL(pRCC->CFGR, 5u, 0x7u, RCC_CFGR_PPRE1_Pos); // APB1 prescaler = 4. PCLK1 = 45MHz (max 45)
@@ -304,9 +282,9 @@ uint8 SysClock_Setup(void)
 
   // Set PLLM (Input Divider)
   // VCO_IN = 8MHz / 8 = 1MHz
-  REG_SET_VAL(pRCC->PLLCFGR, VCO_IN, 0x3Fu, RCC_PLLCFGR_PLLM_Pos);
+  REG_SET_VAL(pRCC->PLLCFGR, PLLM_VALUE, 0x3Fu, RCC_PLLCFGR_PLLM_Pos);
 
-#ifdef OVERDRIVE
+#ifdef SYSCLOCK_OVERDRIVE
   // --- 180MHz PLL Configuration ---
   // VCO_OUT = 1MHz * 360 = 360MHz
   // SYSCLK = 360MHz / 2 = 180MHz
@@ -335,6 +313,26 @@ uint8 SysClock_Setup(void)
   {
     if (timeout-- == 0) return E_NOT_OK; // Failure
   }
+
+#ifdef SYSCLOCK_OVERDRIVE
+  /*
+   * 9b. Enter Over-Drive mode (required for HCLK > 168MHz)
+   * RM0090 "Entering Over-drive mode": SYSCLK still on HSI/HSE, PLL on,
+   * then ODEN -> ODRDY, then ODSWEN -> ODSWRDY, then switch SYSCLK to PLL.
+   */
+  REG_SET_BIT(pPWR->CR, PWR_CR_ODEN_Pos);
+  timeout = OSC_STARTUP_TIMEOUT;
+  while (REG_READ_BIT(pPWR->CSR, PWR_CSR_ODRDY_Pos) == 0)
+  {
+    if (timeout-- == 0) return E_NOT_OK; // Failure
+  }
+  REG_SET_BIT(pPWR->CR, PWR_CR_ODSWEN_Pos);
+  timeout = OSC_STARTUP_TIMEOUT;
+  while (REG_READ_BIT(pPWR->CSR, PWR_CSR_ODSWRDY_Pos) == 0)
+  {
+    if (timeout-- == 0) return E_NOT_OK; // Failure
+  }
+#endif
 
   /*
    * 10. Switch System Clock (SYSCLK) to PLL
@@ -390,49 +388,8 @@ uint8 SysClock_Setup(void)
  */
 void SysClock_UpdateSystemCoreClock(void)
 {
-  uint32 pllm = 0, plln = 0, pllp = 0;
-  uint32 sysclk = 0;
-  uint32 src = 0;
-
-  /* Get SYSCLK source */
-  src = RCC->CFGR & RCC_CFGR_SWS;
-
-  switch (src) {
-    case 0x00:  // HSI used as system clock source
-      sysclk = HSI_VALUE;
-      break;
-    case 0x04:  // HSE used as system clock source
-      sysclk = HSE_VALUE;
-      break;
-    case 0x08:  // PLL used as system clock source
-      /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLLM) * PLLN
-         SYSCLK = PLL_VCO / PLLP */
-      pllm = RCC->PLLCFGR & RCC_PLLCFGR_PLLM;
-      plln = (RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> 6;
-      pllp = (((RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >> 16) + 1) * 2;
-      
-      if (RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC) {
-        /* HSE used as PLL clock source */
-        sysclk = (HSE_VALUE / pllm) * plln / pllp;
-      } else {
-        /* HSI used as PLL clock source */
-        sysclk = (HSI_VALUE / pllm) * plln / pllp;
-      }
-      break;
-    default:
-      sysclk = HSI_VALUE;
-      break;
-  }
-
-  /* HCLK = SYSCLK / AHB prescaler */
-  uint32 ahbpre = (RCC->CFGR & RCC_CFGR_HPRE) >> 4;
-  if (ahbpre & 0x08) {
-    ahbpre = (0x10U << (ahbpre & 0x07)) >> 1;
-    sysclk /= ahbpre;
-  }
-
-  /* Update SystemCoreClock global variable */
-  SystemCoreClock = sysclk;
+  /* Update SystemCoreClock global variable (HCLK = SYSCLK / AHB prescaler) */
+  SystemCoreClock = SysClock_GetHCLK();
 }
 
 /**

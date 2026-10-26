@@ -26,8 +26,8 @@ extern "C"
  * MACRO DEFINITIONS
  * Constants, configurations, and function-like macros
  ******************************************************************************/
-#define SYSCFGCTRL_CLOCK_ENABLE()  (RCC->APB2RSTR |= RCC_APB2RSTR_SYSCFGRST)
-#define SYSCFGCTRL_CLOCK_DISABLE() (RCC->APB2RSTR &= ~RCC_APB2RSTR_SYSCFGRST)
+#define SYSCFGCTRL_CLOCK_ENABLE()  (RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN)
+#define SYSCFGCTRL_CLOCK_DISABLE() (RCC->APB2ENR &= ~RCC_APB2ENR_SYSCFGEN)
 
 // clang-format off
 /**
@@ -79,7 +79,7 @@ extern "C"
  * API FUNCTIONS
  * Public function prototypes
  ******************************************************************************/
-void SysCfgCtrl_SetExtiSource(void *GPIOx, uint8_t exti_line);
+void SysCfgCtrl_SetExtiSource(GPIO_TypeDef *GPIOx, uint8 exti_line);
 
 #ifdef __cplusplus
 }

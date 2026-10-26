@@ -1,105 +1,184 @@
 {
+  // Tasks for every CMake preset, flashing, and board tools.
+  // Run with Ctrl/Cmd+Shift+P -> "Tasks: Run Task" (Ctrl/Cmd+Shift+B = default build).
+  // Needs on PATH: cmake, ninja, openocd (flash/board), python3 (board tools).
   "version": "2.0.0",
+
+  // Windows PowerShell 5.1 (VS Code default) does not support "&&": use cmd.exe
+  "windows": {
+    "options": {
+      "shell": { "executable": "cmd.exe", "args": ["/d", "/c"] }
+    }
+  },
+
+  "inputs": [
+    {
+      "id": "preset",
+      "type": "pickString",
+      "description": "Firmware build preset (CMakePresets.json)",
+      "options": ["debug", "release", "debug-180mhz", "release-180mhz"],
+      "default": "debug"
+    },
+    {
+      "id": "symbol",
+      "type": "promptString",
+      "description": "Variable name(s) to read from the board, space separated",
+      "default": "SystemCoreClock"
+    },
+    {
+      "id": "baud",
+      "type": "pickString",
+      "description": "UART baud rate",
+      "options": ["9600", "115200"],
+      "default": "9600"
+    }
+  ],
+
   "tasks": [
+    // ---------------------------------------------------------------- Build
     {
       "label": "STM32 Build (Debug)",
       "type": "shell",
-      "command": "cmake --build build --config Debug",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "problemMatcher": ["$gcc"],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
+      "command": "cmake --preset debug && cmake --build --preset debug",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$gcc"]
     },
     {
-      "label": "STM32 Build (Release)",
+      "label": "STM32 Build (Debug 180MHz)",
       "type": "shell",
-      "command": "cmake --build build --config Release",
+      "command": "cmake --preset debug-180mhz && cmake --build --preset debug-180mhz",
       "group": "build",
-      "problemMatcher": ["$gcc"],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
+      "problemMatcher": ["$gcc"]
     },
     {
-      "label": "STM32 Configure (Debug)",
+      "label": "STM32 Build (pick preset)",
       "type": "shell",
-      "command": "cmake -B build -GNinja -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-toolchain.cmake -DCMAKE_BUILD_TYPE=Debug",
-      "problemMatcher": [],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
+      "command": "cmake --preset ${input:preset} && cmake --build --preset ${input:preset}",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
     },
     {
-      "label": "STM32 Configure (Release)",
+      "label": "STM32 Configure (pick preset)",
       "type": "shell",
-      "command": "cmake -B build -GNinja -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-toolchain.cmake -DCMAKE_BUILD_TYPE=Release",
-      "problemMatcher": [],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
+      "command": "cmake --preset ${input:preset}",
+      "problemMatcher": []
     },
     {
-      "label": "STM32 Clean Build",
+      "label": "STM32 Rebuild (pick preset)",
       "type": "shell",
-      "command": "cmake --build build --target clean",
-      "problemMatcher": [],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
+      "command": "cmake --preset ${input:preset} && cmake --build --preset ${input:preset} --clean-first",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "STM32 Build All Presets",
+      "type": "shell",
+      "command": "cmake --preset debug && cmake --build --preset debug && cmake --preset release && cmake --build --preset release && cmake --preset debug-180mhz && cmake --build --preset debug-180mhz && cmake --preset release-180mhz && cmake --build --preset release-180mhz",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "STM32 Clean (pick preset)",
+      "type": "shell",
+      "command": "cmake --build --preset ${input:preset} --target clean",
+      "problemMatcher": []
     },
     {
       "label": "STM32 Clean All",
       "type": "shell",
-      "command": "if (Test-Path -Path build) { Remove-Item -Recurse -Force build }",
-      "problemMatcher": [],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": true
-      }
+      "command": "cmake -E rm -rf build",
+      "problemMatcher": []
+    },
+
+    // ---------------------------------------------------------------- Tests
+    {
+      "label": "Unit Tests (Host)",
+      "type": "shell",
+      "command": "cmake --preset host-tests && cmake --build --preset host-tests && ctest --preset host-tests",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": ["$gcc"]
+    },
+
+    // ---------------------------------------------------------------- Flash
+    {
+      "label": "STM32 Build + Flash (Debug)",
+      "type": "shell",
+      "command": "cmake --preset debug && cmake --build --preset debug && openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c \"program build/debug/STM32_F429ZI_Template.elf verify reset exit\"",
+      "problemMatcher": ["$gcc"]
     },
     {
-      "label": "STM32 Build All",
-      "dependsOrder": "sequence",
-      "dependsOn": [
-        "STM32 Configure (Debug)",
-        "STM32 Build (Debug)",
-        "STM32 Configure (Release)",
-        "STM32 Build (Release)"
-      ],
-      "group": "build",
+      "label": "STM32 Build + Flash (pick preset)",
+      "type": "shell",
+      "command": "cmake --preset ${input:preset} && cmake --build --preset ${input:preset} && openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c \"program build/${input:preset}/STM32_F429ZI_Template.elf verify reset exit\"",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "STM32 Flash Only (pick preset, no build)",
+      "type": "shell",
+      "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c \"program build/${input:preset}/STM32_F429ZI_Template.elf verify reset exit\"",
+      "problemMatcher": []
+    },
+    {
+      "label": "STM32 Reset Target",
+      "type": "shell",
+      "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c init -c \"reset run\" -c shutdown",
+      "problemMatcher": []
+    },
+    {
+      "label": "STM32 Mass Erase (erases the whole flash!)",
+      "type": "shell",
+      "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c init -c \"reset halt\" -c \"stm32f2x mass_erase 0\" -c \"reset run\" -c shutdown",
+      "problemMatcher": []
+    },
+
+    // ---------------------------------------------------------------- Board tools (tools/stm32_probe.py)
+    {
+      "label": "Board: List ST-LINK probes",
+      "type": "shell",
+      "command": "python3 tools/stm32_probe.py probes",
+      "windows": { "command": "python tools/stm32_probe.py probes" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Board: Identify target",
+      "type": "shell",
+      "command": "python3 tools/stm32_probe.py identify",
+      "windows": { "command": "python tools/stm32_probe.py identify" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Board: Show clocks",
+      "type": "shell",
+      "command": "python3 tools/stm32_probe.py clock",
+      "windows": { "command": "python tools/stm32_probe.py clock" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Board: Read variable (pick preset of the flashed build)",
+      "type": "shell",
+      "command": "python3 tools/stm32_probe.py read --elf build/${input:preset}/STM32_F429ZI_Template.elf --symbol ${input:symbol}",
+      "windows": { "command": "python tools/stm32_probe.py read --elf build/${input:preset}/STM32_F429ZI_Template.elf --symbol ${input:symbol}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Board: Backup flash",
+      "type": "shell",
+      "command": "python3 tools/stm32_probe.py backup --out backups/",
+      "windows": { "command": "python tools/stm32_probe.py backup --out backups/" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Board: UART echo test",
+      "type": "shell",
+      "command": "python3 tools/stm32_probe.py uart-echo --baud ${input:baud}",
+      "windows": { "command": "python tools/stm32_probe.py uart-echo --baud ${input:baud}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Board: UART baud scan",
+      "type": "shell",
+      "command": "python3 tools/stm32_probe.py uart-scan",
+      "windows": { "command": "python tools/stm32_probe.py uart-scan" },
       "problemMatcher": []
     }
   ]

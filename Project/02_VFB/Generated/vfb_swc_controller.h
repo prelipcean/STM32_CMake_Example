@@ -20,19 +20,20 @@ extern "C"
  * List of required header files
  ******************************************************************************/
 #include "std_types.h"
-#include "usart3_bsp.h"
+#include "usart1_bsp.h"
 
 /******************************************************************************
  * MACRO DEFINITIONS
  * Constants, configurations, and function-like macros
  ******************************************************************************/
-#define VFB_USART3_Init()                   USART3_Init()
-#define VFB_USART3_It_Init()                USART3_It_Init()
+#define VFB_USART1_Init()                   USART1_Init()
+#define VFB_USART1_It_Init()                USART1_It_Init()
 
-#define VFB_USART3_TransmitData(data, size) USART3_TransmitData(data, size)
-#define VFB_USART3_ReceiveData(data, size)  USART3_ReceiveData(data, size)
+#define VFB_USART1_TransmitData(data, size) USART1_TransmitData(data, size)
+#define VFB_USART1_ReceiveData(data, size)  USART1_ReceiveData(data, size)
+#define VFB_USART1_ReadByte(data)           USART1_ReadByte(data)
 
-#define VFB_USART3_PollingDemo()            USART3_PollingDemo()
+#define VFB_USART1_PollingDemo()            USART1_PollingDemo()
 
 
 /******************************************************************************

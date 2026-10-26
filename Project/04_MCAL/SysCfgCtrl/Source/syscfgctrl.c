@@ -66,7 +66,7 @@
  * @param     exti_line The specific EXTI line number to configure (0 to 15).
  * @return    void
  */
-void SysCfgCtrl_SetExtiSource(void *GPIOx, uint8 exti_line)
+void SysCfgCtrl_SetExtiSource(GPIO_TypeDef *GPIOx, uint8 exti_line)
 {
   uint8 l_extiPortCode_u8;
   uint8 l_exticrIndex_u8;

@@ -1,5 +1,5 @@
 /******************************************************************************
- * @file                usart3_bsp.h
+ * @file                usart1_bsp.h
  * @brief               
  *
  * @details             
@@ -7,8 +7,8 @@
  * @note                
  ******************************************************************************/
 
-#ifndef USART3_BSP_H_
-#define USART3_BSP_H_
+#ifndef USART1_BSP_H_
+#define USART1_BSP_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -50,18 +50,20 @@ extern "C"
  * API FUNCTIONS
  * Public function prototypes
  ******************************************************************************/
-void USART3_Init(void);
-void USART3_It_Init(void);
-void USART3_TransmitData(uint8 *data, uint8 size);
-void USART3_ReceiveData(uint8 *data, uint8 size);
+void USART1_Init(void);
+void USART1_It_Init(void);
+void USART1_TransmitData(const uint8 *data, uint8 size);
+void USART1_ReceiveData(uint8 *data, uint8 size);
+/* Interrupt mode (USART1_It_Init): next received byte, E_NOT_OK if none (non-blocking) */
+Std_ReturnType USART1_ReadByte(uint8 *data);
 
-void USART3_PollingDemo(void);
+void USART1_PollingDemo(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* USART3_BSP_H_ */
+#endif /* USART1_BSP_H_ */
 
 /******************************************************************************
  * End of File                                                                *

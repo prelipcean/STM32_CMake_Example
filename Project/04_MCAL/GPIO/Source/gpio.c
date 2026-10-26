@@ -193,7 +193,7 @@ void GPIO_DeInit(void)
   REG_WRITE(GPIOB->AFR[1], 0x00000000U); // AFRH
 
   /* 3. Reset all other ports (C through K) in a loop */
-  for (int i = 0; i < (sizeof(common_ports) / sizeof(common_ports[0])); i++)
+  for (uint32 i = 0U; i < (sizeof(common_ports) / sizeof(common_ports[0])); i++)
   {
     REG_WRITE(common_ports[i]->MODER, 0x00000000U);
     REG_WRITE(common_ports[i]->OTYPER, 0x00000000U);
@@ -252,17 +252,19 @@ uint8 GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint8 pinNumber)
 
 /**
  * @brief       Toggles (inverts) the current state of a specific output pin.
- * @note        This function performs a read-modify-write (RMW) operation on the
- *              Output Data Register (ODR). This operation is **not atomic** and
- *              can lead to race conditions if the same port is modified by an
- *              interrupt service routine (ISR) or another thread concurrently.
+ * @note        Reads ODR and writes the opposite state through BSRR, which only
+ *              changes this pin: other pins of the same port modified by an ISR
+ *              are not affected (a plain ODR ^= could undo such a change).
  * @param[in]   GPIOx Pointer to the GPIO peripheral base address (e.g., GPIOA).
  * @param[in]   pinNumber The pin number to toggle (0-15).
  * @retval      None
  */
 void GPIO_TogglePin(GPIO_TypeDef *GPIOx, uint8 pinNumber)
 {
-  GPIOx->ODR ^= (1U << pinNumber);
+  uint32 l_pinMask_u32 = (1U << pinNumber);
+
+  /* BSRR: lower half sets, upper half resets the pin */
+  GPIOx->BSRR = (GPIOx->ODR & l_pinMask_u32) ? (l_pinMask_u32 << 16U) : l_pinMask_u32;
 }
 
 /**

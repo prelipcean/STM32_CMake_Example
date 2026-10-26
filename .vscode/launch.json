@@ -1,24 +1,52 @@
 {
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  // Cortex-Debug + OpenOCD. arm-none-eabi-gdb and openocd are taken from PATH
+  // (or "cortex-debug.armToolchainPath" / "cortex-debug.openocdPath" in user settings).
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "STM32F429 Debug (ST-Link)",
-      "cwd": "${workspaceFolder}",
-      "executable": "${workspaceFolder}/build/STM32_F429ZI_Template",
-      "request": "launch",
+      "name": "STM32 Debug (168 MHz)",
       "type": "cortex-debug",
+      "request": "launch",
       "servertype": "openocd",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/build/debug/STM32_F429ZI_Template.elf",
+      "preLaunchTask": "STM32 Build (Debug)",
       "device": "STM32F429ZI",
       "interface": "swd",
-      "runToEntryPoint": "SystemInit",
-      "preLaunchTask": "STM32 Build (Debug)",
-      "svdFile": "${env:STM32_CUBE_F4}/Repository/STM32Cube_FW_F4_V1.27.1/CPU/SVD/STM32F429.svd",
       "configFiles": ["interface/stlink.cfg", "target/stm32f4x.cfg"],
-      "openOCDLaunchCommands": ["transport select hla_swd"],
-      "postRestartCommands": ["break main", "continue"],
+      "runToEntryPoint": "main",
+      // Optional peripheral view: set STM32_SVD_DIR to the folder with STM32F429.svd
+      "svdFile": "${env:STM32_SVD_DIR}/STM32F429.svd",
+      "showDevDebugOutput": "parsed"
+    },
+    {
+      "name": "STM32 Debug (180 MHz Over-Drive)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "openocd",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/build/debug-180mhz/STM32_F429ZI_Template.elf",
+      "preLaunchTask": "STM32 Build (Debug 180MHz)",
+      "device": "STM32F429ZI",
+      "interface": "swd",
+      "configFiles": ["interface/stlink.cfg", "target/stm32f4x.cfg"],
+      "runToEntryPoint": "main",
+      "svdFile": "${env:STM32_SVD_DIR}/STM32F429.svd",
+      "showDevDebugOutput": "parsed"
+    },
+    {
+      // Attach to the running target without flashing or resetting it.
+      // Symbols come from build/debug: they must match the image on the board.
+      "name": "STM32 Attach (no flash, no reset)",
+      "type": "cortex-debug",
+      "request": "attach",
+      "servertype": "openocd",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/build/debug/STM32_F429ZI_Template.elf",
+      "device": "STM32F429ZI",
+      "interface": "swd",
+      "configFiles": ["interface/stlink.cfg", "target/stm32f4x.cfg"],
+      "svdFile": "${env:STM32_SVD_DIR}/STM32F429.svd",
       "showDevDebugOutput": "parsed"
     }
   ]
