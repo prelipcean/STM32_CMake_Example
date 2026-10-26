@@ -97,7 +97,7 @@ openocd -f interface/stlink.cfg -f target/stm32f4x.cfg \
 | Build | Build (Debug) *(default)*, Build (Debug 180MHz), Build / Configure / Rebuild / Clean *(pick preset)*, Build All Presets, Clean All |
 | Test | Unit Tests (Host) |
 | Flash | Build + Flash (Debug), Build + Flash *(pick preset)*, Flash Only *(pick preset, no build)*, Reset Target, Mass Erase |
-| Board | List ST-LINK probes, Identify target, Show clocks, Backup flash (to `backups/`, git-ignored), UART echo test, UART baud scan |
+| Board | List ST-LINK probes, Identify target, Show clocks, Read variable *(by name, using the ELF of the flashed build)*, Backup flash (to `backups/`, git-ignored), UART echo test, UART baud scan |
 
 Flash/board tasks need `openocd` on PATH; board tasks also need Python 3 (`tools/stm32_probe.py`,
 standard library only; on Windows the UART tasks need `python -m pip install pyserial`). On Windows

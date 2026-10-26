@@ -20,6 +20,12 @@
       "default": "debug"
     },
     {
+      "id": "symbol",
+      "type": "promptString",
+      "description": "Variable name(s) to read from the board, space separated",
+      "default": "SystemCoreClock"
+    },
+    {
       "id": "baud",
       "type": "pickString",
       "description": "UART baud rate",
@@ -145,6 +151,13 @@
       "type": "shell",
       "command": "python3 tools/stm32_probe.py clock",
       "windows": { "command": "python tools/stm32_probe.py clock" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Board: Read variable (pick preset of the flashed build)",
+      "type": "shell",
+      "command": "python3 tools/stm32_probe.py read --elf build/${input:preset}/STM32_F429ZI_Template.elf --symbol ${input:symbol}",
+      "windows": { "command": "python tools/stm32_probe.py read --elf build/${input:preset}/STM32_F429ZI_Template.elf --symbol ${input:symbol}" },
       "problemMatcher": []
     },
     {

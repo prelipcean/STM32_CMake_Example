@@ -10,6 +10,7 @@ Subcommands
   identify                core, device id/family/revision, flash size, UID,
                           vector table of the image in flash
   read ADDR [ADDR...]     read 32 bit words (halted, read twice, compared)
+  read --elf F --symbol S read variables by name; checks the board runs F
   clock [--hse HZ]        decode SYSCLK/HCLK/PCLK from RCC (F2/F4/F7 only)
   backup --out FILE|DIR/  dump the whole flash to a file (+ .sha256);
                           a directory gets <device>-<uid>-<time>.bin
@@ -36,6 +37,7 @@ import os
 import platform
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import time
@@ -485,11 +487,118 @@ def cmd_identify(args):
         print("WARNING: " + r["warning"])
 
 
+class Elf32(object):
+    """Minimal little-endian ELF32 reader: sections, symbols, bytes at an address."""
+
+    def __init__(self, path):
+        self.path = path
+        with open(path, "rb") as f:
+            self.data = f.read()
+        d = self.data
+        if d[:4] != b"\x7fELF" or d[4] != 1 or d[5] != 1:
+            raise ProbeError("%s is not a little-endian ELF32 file" % path)
+        shoff, = struct.unpack_from("<I", d, 0x20)
+        shentsize, shnum, shstrndx = struct.unpack_from("<HHH", d, 0x2E)
+        self.sections = [struct.unpack_from("<10I", d, shoff + i * shentsize) for i in range(shnum)]
+
+    def _section_bytes(self, sh):
+        return self.data[sh[4]:sh[4] + sh[5]]
+
+    def symbols(self):
+        syms = {}
+        for sh in self.sections:
+            if sh[1] != 2:  # SHT_SYMTAB
+                continue
+            strtab = self._section_bytes(self.sections[sh[6]])
+            tab = self._section_bytes(sh)
+            for off in range(0, len(tab), 16):
+                name_off, value, size, info, _, shndx = struct.unpack_from("<IIIBBH", tab, off)
+                name = strtab[name_off:strtab.index(b"\0", name_off)].decode(errors="replace")
+                if name and (info & 0xF) in (1, 2) and shndx != 0:  # OBJECT / FUNC, defined
+                    syms.setdefault(name, []).append((value, size, "global" if info >> 4 else "local"))
+        return syms
+
+    def bytes_at(self, addr, length):
+        """Bytes the image places at a load address (e.g. the vector table in flash)."""
+        for sh in self.sections:
+            if sh[1] == 1 and sh[3] <= addr and addr + length <= sh[3] + sh[5]:  # PROGBITS
+                start = sh[4] + (addr - sh[3])
+                return self.data[start:start + length]
+        return None
+
+
 def cmd_read(args):
-    addrs = [int(a, 0) for a in args.addr]
-    vals, _ = attach_reads(args, [(32, a) for a in addrs])
-    out = {"0x%08X" % a: (None if vals[a] is None else "0x%08X" % vals[a]) for a in addrs}
-    print(json.dumps(out, indent=2) if args.json else "\n".join("%s: %s" % (k, v or "read failed/inconsistent") for k, v in out.items()))
+    if args.symbol and not args.elf:
+        raise ProbeError("--symbol needs --elf <the ELF that is flashed on the board>")
+    items = [("0x%08X" % int(a, 0), int(a, 0), 4) for a in args.addr]
+
+    elf = Elf32(args.elf) if args.elf else None
+    if elf:
+        syms = elf.symbols()
+        for name in args.symbol or []:
+            if name not in syms:
+                import difflib
+                close = difflib.get_close_matches(name, list(syms), n=5, cutoff=0.6)
+                raise ProbeError("symbol %s not in %s%s. Unused objects are removed by --gc-sections; "
+                                 "use the variable (or mark it __attribute__((used)))."
+                                 % (name, args.elf, " (similar: %s)" % ", ".join(close) if close else ""))
+            if len(syms[name]) > 1:
+                raise ProbeError("symbol %s is defined %d times (static in several files)" % (name, len(syms[name])))
+            addr, size, _ = syms[name][0]
+            items.append((name, addr, size or 4))
+
+    # Words to read: 32 bit aligned, covering every item (narrow reads are unreliable via HLA)
+    words = set()
+    for _, addr, size in items:
+        words.update(range(addr & ~3, addr + size, 4))
+    if elf and not args.no_image_check:
+        words.update((FLASH_BASE, FLASH_BASE + 4))
+    if len(words) > 256:
+        raise ProbeError("too much to read (%d words); read large objects with backup/dump instead" % len(words))
+    vals, _ = attach_reads(args, [(32, w) for w in sorted(words)])
+
+    if elf and not args.no_image_check:
+        expected = elf.bytes_at(FLASH_BASE, 8)
+        target = [vals[FLASH_BASE], vals[FLASH_BASE + 4]]
+        if expected is None:
+            raise ProbeError("%s has no vector table at 0x%08X; pass --no-image-check" % (args.elf, FLASH_BASE))
+        exp = list(struct.unpack("<II", expected))
+        if exp != target:
+            raise ProbeError("the board does not run %s: vector table SP/Reset in ELF 0x%08X/0x%08X, on target %s/%s. "
+                             "Symbol addresses would be wrong. Flash this ELF or pass the matching one "
+                             "(--no-image-check to override)." % (args.elf, exp[0], exp[1],
+                                                                  "?" if target[0] is None else "0x%08X" % target[0],
+                                                                  "?" if target[1] is None else "0x%08X" % target[1]))
+
+    results = []
+    for label, addr, size in items:
+        raw = b""
+        for w in range(addr & ~3, addr + size, 4):
+            if vals.get(w) is None:
+                raw = None
+                break
+            raw += struct.pack("<I", vals[w])
+        if raw is None:
+            results.append(dict(name=label, address="0x%08X" % addr, size=size, value=None))
+            continue
+        raw = raw[addr - (addr & ~3):][:size]
+        entry = dict(name=label, address="0x%08X" % addr, size=size, hex=raw[::-1].hex().upper() if size <= 8 else raw.hex(" "))
+        if size in (1, 2, 4, 8):
+            entry["value"] = int.from_bytes(raw, "little")
+        results.append(entry)
+
+    if args.json:
+        print(json.dumps(results, indent=2))
+        return
+    if elf and not args.no_image_check:
+        print("Image check: board runs %s" % os.path.basename(args.elf))
+    for r in results:
+        if r.get("value") is None and "hex" not in r:
+            print("%-24s @ %s: read failed/inconsistent" % (r["name"], r["address"]))
+        elif "value" in r:
+            print("%-24s @ %s (%d B): %d (0x%s)" % (r["name"], r["address"], r["size"], r["value"], r["hex"]))
+        else:
+            print("%-24s @ %s (%d B): %s" % (r["name"], r["address"], r["size"], r["hex"]))
 
 
 def cmd_clock(args):
@@ -693,7 +802,10 @@ def main():
     sub.add_parser("probes").set_defaults(func=cmd_probes)
     sub.add_parser("identify").set_defaults(func=cmd_identify)
     p = sub.add_parser("read")
-    p.add_argument("addr", nargs="+")
+    p.add_argument("addr", nargs="*", help="addresses (32 bit words)")
+    p.add_argument("--elf", help="ELF flashed on the board (for --symbol)")
+    p.add_argument("--symbol", nargs="+", help="global/static variable names to read (needs --elf)")
+    p.add_argument("--no-image-check", action="store_true", help="skip the check that the board runs --elf")
     p.set_defaults(func=cmd_read)
     p = sub.add_parser("clock")
     p.add_argument("--hse", type=int, default=8000000, help="HSE frequency in Hz (default 8 MHz)")
