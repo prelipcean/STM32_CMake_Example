@@ -18,10 +18,29 @@ don't start from scratch.
 ## Hardware
 
 - STM32F429I-DISC1 board (LEDs on PG13/PG14, user button on PA0, 8MHz HSE crystal)
-- USART1 on PA9 (TX) / PA10 (RX), 9600 8N1 — RX bytes are echoed back. On the
+- USART1 on PA9 (TX) / PA10 (RX), 9600 8N1, see *UART commands* below. On the
   STM32F429I-DISC1 these pins are the ST-LINK/V2-B virtual COM port, so the echo
   works over the same USB cable (e.g. `/dev/cu.usbmodem*`, `/dev/ttyACM*`, `COMx`)
 - ST-LINK V2/V3 for flashing and debugging
+
+## UART Commands
+
+Open the ST-LINK serial port at **9600 8N1** (e.g. `python -m serial.tools.miniterm <port> 9600`,
+the VS Code Serial Monitor, or `screen <port> 9600`) and type:
+
+| Key | Reply |
+|---|---|
+| `H` / `h` | `LEFT` |
+| `J` / `j` | `DOWN` |
+| `K` / `k` | `UP` |
+| `L` / `l` | `RIGHT` |
+| anything else | echoed back unchanged |
+
+Replies end with `\r\n` and arrive within ~6 ms. Received bytes are queued by the USART1 RX
+interrupt (64 byte ring buffer) and handled by `Controller_Runnable()`; the reply table is
+`ga_ControllerReplies` in `swc_controller.c`. Replies are sent with polling TX, so a sustained burst
+of commands faster than the replies can be sent drops input (counted in
+`g_Usart1RxOverflowCount_u32`).
 
 ## Software Requirements
 

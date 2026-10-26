@@ -52,8 +52,10 @@ extern "C"
  ******************************************************************************/
 void USART1_Init(void);
 void USART1_It_Init(void);
-void USART1_TransmitData(uint8 *data, uint8 size);
+void USART1_TransmitData(const uint8 *data, uint8 size);
 void USART1_ReceiveData(uint8 *data, uint8 size);
+/* Interrupt mode (USART1_It_Init): next received byte, E_NOT_OK if none (non-blocking) */
+Std_ReturnType USART1_ReadByte(uint8 *data);
 
 void USART1_PollingDemo(void);
 

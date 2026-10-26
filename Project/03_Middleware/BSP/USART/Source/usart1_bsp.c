@@ -17,6 +17,9 @@
  * MACRO DEFINITIONS
  * Constants, bit masks, register configurations, etc.
  ******************************************************************************/
+/* RX ring buffer for interrupt mode, size must be a power of 2 (max 256) */
+#define USART1_RX_BUFFER_SIZE (64U)
+#define USART1_RX_BUFFER_MASK (USART1_RX_BUFFER_SIZE - 1U)
 
 /******************************************************************************
  * TYPE DEFINITIONS
@@ -69,6 +72,13 @@ STATIC const GPIO_PinConfig_T uart1Rx      = {.pinNumber = GPIO_PIN_NUM_10,
 static uint8 ReceivedDataBuffer[1];
 static uint8 ReceivedDataSize = 1;
 
+/* Single producer (ISR) / single consumer (USART1_ReadByte): no locking needed,
+ * the ISR only writes the head, the reader only writes the tail */
+STATIC volatile uint8 ga_Usart1RxBuffer_u8[USART1_RX_BUFFER_SIZE];
+STATIC volatile uint8 g_Usart1RxHead_u8          = 0U;
+STATIC volatile uint8 g_Usart1RxTail_u8          = 0U;
+STATIC volatile uint32 g_Usart1RxOverflowCount_u32 = 0U; /* bytes dropped, buffer full */
+
 /******************************************************************************
  * PUBLIC VARIABLES
  * Global variables (extern)
@@ -113,7 +123,7 @@ void USART1_It_Init(void)
   USART_Init(USART1, &usart1ItConfig);
 }
 
-void USART1_TransmitData(uint8 *data, uint8 size)
+void USART1_TransmitData(const uint8 *data, uint8 size)
 {
   USART_TransmitData(USART1, data, size);
 }
@@ -121,6 +131,21 @@ void USART1_TransmitData(uint8 *data, uint8 size)
 void USART1_ReceiveData(uint8 *data, uint8 size)
 {
   USART_ReceiveData(USART1, data, size);
+}
+
+Std_ReturnType USART1_ReadByte(uint8 *data)
+{
+  Std_ReturnType l_ret = E_NOT_OK;
+  uint8 l_tail_u8      = g_Usart1RxTail_u8;
+
+  if (l_tail_u8 != g_Usart1RxHead_u8)
+  {
+    *data             = ga_Usart1RxBuffer_u8[l_tail_u8];
+    g_Usart1RxTail_u8 = (uint8)((l_tail_u8 + 1U) & USART1_RX_BUFFER_MASK);
+    l_ret             = E_OK;
+  }
+
+  return l_ret;
 }
 
 void USART1_PollingDemo(void)
@@ -134,13 +159,27 @@ void USART1_PollingDemo(void)
 /* Interrupt setup */
 void USART1_IRQHandler(void)
 {
-  /* Check if RXNE flag is set */
+  uint8 l_head_u8;
+  uint8 l_next_u8;
+
+  /* Check if RXNE flag is set (also set on overrun) */
   if (USART1->SR & USART_SR_RXNE)
   {
-    /* Read received data */
+    /* Reading DR (after SR) clears RXNE and ORE */
     uint8 receivedByte = (uint8)(USART1->DR & 0xFFU);
-    /* Echo back received data */
-    USART_TransmitData(USART1, &receivedByte, 1);
+
+    /* Queue it for the application (USART1_ReadByte), no work in the ISR */
+    l_head_u8          = g_Usart1RxHead_u8;
+    l_next_u8          = (uint8)((l_head_u8 + 1U) & USART1_RX_BUFFER_MASK);
+    if (l_next_u8 != g_Usart1RxTail_u8)
+    {
+      ga_Usart1RxBuffer_u8[l_head_u8] = receivedByte;
+      g_Usart1RxHead_u8               = l_next_u8;
+    }
+    else
+    {
+      g_Usart1RxOverflowCount_u32++;
+    }
   }
 }
 

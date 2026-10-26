@@ -35,7 +35,7 @@ platform_add_module(
   SOURCES ${BOARD_BSP_DIR}/board.c
   INCLUDES ${BOARD_BSP_DIR}
   DEPENDS utilities
-  PRIVATE_DEPENDS cmsis mcal_fpu mcal_sysclock mcal_gpio)
+  PRIVATE_DEPENDS cmsis mcal_fpu mcal_sysclock mcal_gpio mcal_systick)
 
 platform_add_module(
   bsp_usart1
@@ -73,6 +73,13 @@ platform_add_module(
   DEPENDS utilities
   PRIVATE_DEPENDS cmsis)
 target_compile_definitions(mcal_sysclock PRIVATE ${BOARD_SYSCLOCK_DEFINITIONS})
+
+platform_add_module(
+  mcal_systick
+  SOURCES 04_MCAL/SysTick/Source/systick.c
+  INCLUDES 04_MCAL/SysTick/Include
+  DEPENDS utilities
+  PRIVATE_DEPENDS cmsis)
 
 platform_add_module(
   mcal_syscfgctrl

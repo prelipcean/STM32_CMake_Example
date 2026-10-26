@@ -239,10 +239,10 @@ void USART_Init(USART_TypeDef *USARTx, const USART_Config_T *config)
   USARTx->CR1 |= USART_CR1_UE; /* Enable USART */
 }
 
-void USART_TransmitData(USART_TypeDef *USARTx, uint8 *data, uint8 size)
+void USART_TransmitData(USART_TypeDef *USARTx, const uint8 *data, uint8 size)
 {
-  uint8 *lp_data8Bit;
-  uint16 *lp_data9Bit;
+  const uint8 *lp_data8Bit;
+  const uint16 *lp_data9Bit;
   uint8 l_txBuffCounter = 0;
 
   l_txBuffCounter       = size;
@@ -252,7 +252,7 @@ void USART_TransmitData(USART_TypeDef *USARTx, uint8 *data, uint8 size)
       0u == ((USARTx->CR1 >> USART_CR1_PCE_Pos) & 0x1u))
   {
     lp_data8Bit = NULL_PTR;
-    lp_data9Bit = (uint16 *)data;
+    lp_data9Bit = (const uint16 *)data;
   }
   else
   {

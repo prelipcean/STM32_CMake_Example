@@ -27,6 +27,7 @@ extern "C"
  * Public function prototypes
  ******************************************************************************/
 void Board_Init(void);
+/* Non-blocking: call it from the main loop as often as possible */
 void Board_Heartbeat(void);
 
 #ifdef __cplusplus

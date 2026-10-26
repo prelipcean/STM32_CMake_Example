@@ -31,7 +31,7 @@ int main(void)
     /* SWC runnables */
     Controller_Runnable();
 
-    /* Status LED + simple delay */
+    /* Status LED (non-blocking) */
     Board_Heartbeat();
   }
 }

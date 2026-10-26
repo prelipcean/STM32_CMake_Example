@@ -2,6 +2,7 @@
 #include "fpu.h"
 #include "sysclock.h"
 #include "gpio.h"
+#include "systick.h"
 #include "board.h"
 /*
  * Two user LEDs: LD3 (green), LD4 (red)
@@ -23,6 +24,8 @@
 #define GREEN_LED_PIN   GPIO_PIN_NUM_13
 #define RED_LED_PIN     GPIO_PIN_NUM_14
 #define BLUE_BUTTON_PIN GPIO_PIN_NUM_0
+
+#define BOARD_HEARTBEAT_PERIOD_MS (500U) /* green LED toggle period */
 
 STATIC const GPIO_PinConfig_T greenLedConfig   = {.pinNumber = GPIO_PIN_NUM_13,
                                                   .mode      = GPIO_MODE_OUTPUT,
@@ -66,6 +69,9 @@ void Board_Init(void)
   /* Clock setup successful - proceed normally */
   GPIO_Init(GPIOG, &redLedConfig);
 
+  /* 1ms time base (needs the final SystemCoreClock) */
+  (void)SysTickDriver_Init();
+
   /* Optional: Output the clock to a pin for verification */
   SysClock_OutputMCO1(); // Output PLL/4 on PA8
   SysClock_OutputMCO2(); // Output SYSCLK/5 on PC9
@@ -81,8 +87,15 @@ void Board_Init(void)
 
 void Board_Heartbeat(void)
 {
-  /* Toggle green LED to indicate normal operation */
-  GPIO_TogglePin(GPIOG, GREEN_LED_PIN);
+  STATIC uint32 l_lastToggle_u32 = 0U;
+  uint32 l_now_u32                = SysTickDriver_GetTick();
+
+  /* Toggle green LED every BOARD_HEARTBEAT_PERIOD_MS, without blocking */
+  if ((l_now_u32 - l_lastToggle_u32) >= BOARD_HEARTBEAT_PERIOD_MS)
+  {
+    l_lastToggle_u32 = l_now_u32;
+    GPIO_TogglePin(GPIOG, GREEN_LED_PIN);
+  }
 
 #if 0 /* Polling method / no debounce ! */
   if (1u == GPIO_ReadPin(GPIOA, BLUE_BUTTON_PIN))
@@ -96,9 +109,6 @@ void Board_Heartbeat(void)
     GPIO_WritePin(GPIOG, RED_LED_PIN, GPIO_PIN_LOW);
   }
 #endif
-
-  /* Simple delay - about 0.5 second at 168MHz */
-  for (volatile uint32_t i = 0; i < 5000000; i++);
 }
 
 /**

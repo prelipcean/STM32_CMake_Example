@@ -31,6 +31,7 @@ extern "C"
 
 #define VFB_USART1_TransmitData(data, size) USART1_TransmitData(data, size)
 #define VFB_USART1_ReceiveData(data, size)  USART1_ReceiveData(data, size)
+#define VFB_USART1_ReadByte(data)           USART1_ReadByte(data)
 
 #define VFB_USART1_PollingDemo()            USART1_PollingDemo()
 
