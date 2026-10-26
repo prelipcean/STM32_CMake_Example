@@ -13,7 +13,7 @@
       "servertype": "openocd",
       "device": "STM32F429ZI",
       "interface": "swd",
-      "runToEntryPoint": "SystemInit",
+      "runToEntryPoint": "main",
       "preLaunchTask": "STM32 Build (Debug)",
       // Optional: path to STM32F429.svd for the peripheral view, e.g. from the
       // STM32CubeF4 package; set the STM32_SVD_DIR environment variable

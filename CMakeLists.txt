@@ -67,6 +67,7 @@ set(LINKER_SCRIPT
 # Add all your .c/.cpp source files here
 set(PROJECT_SOURCES
     # 01_Application Layer
+    Project/01_Application/Main/Source/main.c
     Project/01_Application/SWC_Controller/Source/swc_controller.c
 
     # 02_VFB Layer
@@ -92,6 +93,7 @@ set(PROJECT_INCLUDE_DIRS
     Project/02_VFB/Generated
 
     # 03_Middlewares / Services Layer
+    Project/03_Middleware/BSP/STM32F429ZI
     Project/03_Middleware/BSP/USART/Include
 
     # 04_MCAL Layer

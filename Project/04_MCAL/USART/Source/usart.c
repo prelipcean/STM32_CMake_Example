@@ -29,6 +29,17 @@
    : (USARTx == UART8)  ? UART8_CLOCK_ENABLE()                                                                         \
                         : (void)0)
 
+#define USARTX_TO_IRQN(USARTx)                                                                                         \
+  ((USARTx == USART1)   ? USART1_IRQn                                                                                  \
+   : (USARTx == USART2) ? USART2_IRQn                                                                                  \
+   : (USARTx == USART3) ? USART3_IRQn                                                                                  \
+   : (USARTx == UART4)  ? UART4_IRQn                                                                                   \
+   : (USARTx == UART5)  ? UART5_IRQn                                                                                   \
+   : (USARTx == USART6) ? USART6_IRQn                                                                                  \
+   : (USARTx == UART7)  ? UART7_IRQn                                                                                   \
+   : (USARTx == UART8)  ? UART8_IRQn                                                                                   \
+                        : 0xFEU)
+
 // #define DEBUG_USART_INIT
 
 /******************************************************************************
@@ -90,8 +101,8 @@ void USART_Init(USART_TypeDef *USARTx, const USART_Config_T *config)
   {
     USARTx->CR1 |= USART_CR1_RXNEIE; /* Enable RXNE interrupt */
     /* Enable NVIC for USART interrupt and set priority */
-    NVICDriver_SetPriority(USART3_IRQn, 1); /* Example priority */
-    NVICDriver_EnableIRQ(USART3_IRQn);
+    NVICDriver_SetPriority((uint8)USARTX_TO_IRQN(USARTx), 1); /* Example priority */
+    NVICDriver_EnableIRQ((uint8)USARTX_TO_IRQN(USARTx));
   }
   else
   {
@@ -238,7 +249,7 @@ void USART_TransmitData(USART_TypeDef *USARTx, uint8 *data, uint8 size)
 
   /* Check wordlength to use 8 bit pointer or 9 bit pointer */
   if ((USART_WORD_LENGTH_9B == ((USARTx->CR1 >> USART_CR1_M_Pos) & 0x1u)) &&
-      USART_PARITY_NONE == ((USARTx->CR1 >> USART_CR1_PS_Pos) & 0x1u))
+      0u == ((USARTx->CR1 >> USART_CR1_PCE_Pos) & 0x1u))
   {
     lp_data8Bit = NULL_PTR;
     lp_data9Bit = (uint16 *)data;
@@ -284,7 +295,7 @@ void USART_ReceiveData(USART_TypeDef *USARTx, uint8 *data, uint8 size)
 
   /* Check wordlength to use 8 bit pointer or 9 bit pointer */
   if ((USART_WORD_LENGTH_9B == ((USARTx->CR1 >> USART_CR1_M_Pos) & 0x1u)) &&
-      USART_PARITY_NONE == ((USARTx->CR1 >> USART_CR1_PS_Pos) & 0x1u))
+      0u == ((USARTx->CR1 >> USART_CR1_PCE_Pos) & 0x1u))
   {
     lp_data8Bit = NULL_PTR;
     lp_data9Bit = (uint16 *)data;
@@ -314,7 +325,7 @@ void USART_ReceiveData(USART_TypeDef *USARTx, uint8 *data, uint8 size)
     {
       if ((USART_WORD_LENGTH_9B == ((USARTx->CR1 >> USART_CR1_M_Pos) & 0x1u)) ||
           ((USART_WORD_LENGTH_8B == ((USARTx->CR1 >> USART_CR1_M_Pos) & 0x1u)) &&
-           (USART_PARITY_NONE == ((USARTx->CR1 >> USART_CR1_PS_Pos) & 0x1u))))
+           (0u == ((USARTx->CR1 >> USART_CR1_PCE_Pos) & 0x1u))))
       {
         *lp_data8Bit = (uint8)(USARTx->DR & 0xFFU); /* Receive 8 bits */
         lp_data8Bit++;                              /* Move to next 8-bit data */

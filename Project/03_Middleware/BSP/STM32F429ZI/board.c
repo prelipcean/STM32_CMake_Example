@@ -2,7 +2,7 @@
 #include "fpu.h"
 #include "sysclock.h"
 #include "gpio.h"
-#include "swc_controller.h"
+#include "board.h"
 /*
  * Two user LEDs: LD3 (green), LD4 (red)
  * The green LED is a user LED connected to the I/O PG13 of the STM32F429ZIT6.
@@ -12,9 +12,13 @@
  * The blue button is connected to the I/O PA0 of the STM32F429ZIT6.
  *
  * Initialization order:
- * 1. FPU - Enable floating point unit first (core feature)
- * 2. Clock - Configure system clock and bus clocks
- * 3. GPIO - Configure LED pins for status indication
+ * 1. FPU - Enable floating point unit first (core feature), in SystemInit()
+ * 2. Clock - Configure system clock and bus clocks, in Board_Init()
+ * 3. GPIO - Configure LED pins for status indication, in Board_Init()
+ *
+ * The clock setup is done in Board_Init() and not in SystemInit(): SystemInit()
+ * runs before the startup code copies .data and clears .bss, so any variable
+ * written there (e.g. SystemCoreClock) would be overwritten afterwards.
  * */
 #define GREEN_LED_PIN   GPIO_PIN_NUM_13
 #define RED_LED_PIN     GPIO_PIN_NUM_14
@@ -43,8 +47,25 @@ STATIC const GPIO_PinConfig_T blueButtonConfig = {.pinNumber   = GPIO_PIN_NUM_0,
                                                   .alternate   = GPIO_AF0,
                                                   .edgeTrigger = GPIO_EXTI_RISING_EDGE};
 
-int Board_Init(void)
+void Board_Init(void)
 {
+  /* Configure system clock to HSE and 168MHz using PLL */
+  if (SysClock_Setup() != E_OK)
+  {
+    /* Clock setup failed - flash LED to indicate error */
+    GPIO_Init(GPIOG, &redLedConfig);
+    while (1)
+    {
+      GPIO_TogglePin(GPIOG, RED_LED_PIN);
+
+      /* Simple delay */
+      for (volatile uint32_t i = 0; i < 100000; i++);
+    }
+  }
+
+  /* Clock setup successful - proceed normally */
+  GPIO_Init(GPIOG, &redLedConfig);
+
   /* Optional: Output the clock to a pin for verification */
   SysClock_OutputMCO1(); // Output PLL/4 on PA8
   SysClock_OutputMCO2(); // Output SYSCLK/5 on PC9
@@ -56,39 +77,35 @@ int Board_Init(void)
   GPIO_Init(GPIOA, &blueButtonConfig);
   /* Configure button interrupt */
   GPIO_SetPinInterrupt(GPIOA, &blueButtonConfig, 5u); // Priority 5
+}
 
-  /* SWC initialization */
-  Controller_Init();
-
-  while (1)
-  {
-    // TODO: Application code
-    Controller_Runnable();  
-    /* Toggle green LED to indicate normal operation */
-    GPIO_TogglePin(GPIOG, GREEN_LED_PIN);
+void Board_Heartbeat(void)
+{
+  /* Toggle green LED to indicate normal operation */
+  GPIO_TogglePin(GPIOG, GREEN_LED_PIN);
 
 #if 0 /* Polling method / no debounce ! */
-    if (1u == GPIO_ReadPin(GPIOA, BLUE_BUTTON_PIN))
-    {
-      /* If button is pressed, turn on red LED */
-      GPIO_WritePin(GPIOG, RED_LED_PIN, GPIO_PIN_HIGH);
-    }
-    else
-    {
-      /* If button is not pressed, turn off red LED */
-      GPIO_WritePin(GPIOG, RED_LED_PIN, GPIO_PIN_LOW);
-    }
+  if (1u == GPIO_ReadPin(GPIOA, BLUE_BUTTON_PIN))
+  {
+    /* If button is pressed, turn on red LED */
+    GPIO_WritePin(GPIOG, RED_LED_PIN, GPIO_PIN_HIGH);
+  }
+  else
+  {
+    /* If button is not pressed, turn off red LED */
+    GPIO_WritePin(GPIOG, RED_LED_PIN, GPIO_PIN_LOW);
+  }
 #endif
 
-    /* Simple delay - about 0.5 second at 168MHz */
-    for (volatile uint32_t i = 0; i < 5000000; i++);
-  }
+  /* Simple delay - about 0.5 second at 168MHz */
+  for (volatile uint32_t i = 0; i < 5000000; i++);
 }
 
 /**
  * @brief  Setup the microcontroller system
- *         Initialize the FPU setting, vector table location and External memory
- *         configuration.
+ *         Initialize the FPU setting and vector table location.
+ * @note   Called by the startup code BEFORE .data/.bss are initialized:
+ *         do not write global variables here.
  * @param  None
  * @retval None
  */
@@ -97,25 +114,6 @@ void SystemInit(void)
   /* Enable FPU first as it's a core feature and might be needed during clock
    * setup */
   Fpu_Enable();
-
-  /* Configure system clock to HSE and 168MHz using PLL */
-  if (SysClock_Setup() != E_OK)
-  {
-    /* Clock setup failed - flash LED to indicate error */
-    while (1)
-    {
-      GPIO_Init(GPIOG, &redLedConfig);
-      GPIO_TogglePin(GPIOG, RED_LED_PIN);
-
-      /* Simple delay */
-      for (volatile uint32_t i = 0; i < 100000; i++);
-    }
-  }
-  else
-  {
-    /* Clock setup successful - proceed normally */
-    GPIO_Init(GPIOG, &redLedConfig);
-  }
 
   /* Configure the Vector Table location -------------------------------------*/
   // #if defined(USER_VECT_TAB_ADDRESS)
@@ -171,7 +169,7 @@ void EXTI0_IRQHandler(void)
   if (EXTI->PR & (1U << BLUE_BUTTON_PIN))
   {
     /* Clear the EXTI line 0 pending bit */
-    EXTI->PR |= (1U << BLUE_BUTTON_PIN);
+    EXTI->PR = (1U << BLUE_BUTTON_PIN); /* rc_w1: write only this bit, |= would clear all */
 
     /* Toggle red LED on button press */
     GPIO_TogglePin(GPIOG, RED_LED_PIN);

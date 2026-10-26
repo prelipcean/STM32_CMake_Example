@@ -193,7 +193,7 @@ void GPIO_DeInit(void)
   REG_WRITE(GPIOB->AFR[1], 0x00000000U); // AFRH
 
   /* 3. Reset all other ports (C through K) in a loop */
-  for (int i = 0; i < (sizeof(common_ports) / sizeof(common_ports[0])); i++)
+  for (uint32 i = 0U; i < (sizeof(common_ports) / sizeof(common_ports[0])); i++)
   {
     REG_WRITE(common_ports[i]->MODER, 0x00000000U);
     REG_WRITE(common_ports[i]->OTYPER, 0x00000000U);

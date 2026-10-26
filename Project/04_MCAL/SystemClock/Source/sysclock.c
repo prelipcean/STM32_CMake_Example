@@ -33,12 +33,11 @@
 #define HSE_VALUE 8000000UL
 
 /**
- * @brief VCO input frequency in MHz (HSE_VALUE / PLLM divider).
- * Calculated here as HSE_VALUE / 1, assuming PLLM is set to 8 in the PLL configuration
- * to get a 1MHz input to the VCO (VCO_IN = HSE_VALUE / PLLM).
- * This value is used for PLL mathematical calculations (e.g., PLL_VCO = VCO_IN * PLLN).
+ * @brief PLLM input divider: HSE_VALUE / 1MHz, so the VCO input is always 1MHz
+ * (VCO_IN = HSE_VALUE / PLLM). For an 8MHz HSE this gives PLLM = 8.
+ * The PLLN/PLLP values below assume this 1MHz VCO input.
  */
-#define VCO_IN (HSE_VALUE / 1000000UL)
+#define PLLM_VALUE (HSE_VALUE / 1000000UL)
 
 /**
  * @brief Timeout for oscillator startup (in loop iterations).
@@ -72,7 +71,8 @@ uint32 SysClock_GetSYSCLK(void)
 {
   uint32 sysclk = 0;
   uint32 source = RCC->CFGR & RCC_CFGR_SWS;
-  
+  uint32 pllm, plln, pllp, pllin;
+
   switch (source)
   {
     case RCC_CFGR_SWS_HSI:
@@ -82,8 +82,13 @@ uint32 SysClock_GetSYSCLK(void)
       sysclk = HSE_VALUE;
       break;
     case RCC_CFGR_SWS_PLL:
-      // TODO: Calculate PLL frequency based on source and multipliers
-      sysclk = 168000000; // Default to 168MHz
+      /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLLM) * PLLN
+         SYSCLK = PLL_VCO / PLLP */
+      pllm  = RCC->PLLCFGR & RCC_PLLCFGR_PLLM;
+      plln  = (RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> RCC_PLLCFGR_PLLN_Pos;
+      pllp  = (((RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >> RCC_PLLCFGR_PLLP_Pos) + 1U) * 2U;
+      pllin = (RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC) ? HSE_VALUE : HSI_VALUE;
+      sysclk = (pllin / pllm) * plln / pllp;
       break;
     default:
       sysclk = HSI_VALUE;
@@ -165,7 +170,7 @@ uint32 SysClock_GetPCLK2(void)
  * This variable is used by SysTick_Config() and other HAL/LL functions.
  * It MUST be updated whenever the core clock changes.
  */
-uint32 SystemCoreClock = HSE_VALUE;
+uint32 SystemCoreClock = HSI_VALUE; /* Reset clock source is HSI */
 
 static volatile uint32 timeout = OSC_STARTUP_TIMEOUT;
 
@@ -304,7 +309,7 @@ uint8 SysClock_Setup(void)
 
   // Set PLLM (Input Divider)
   // VCO_IN = 8MHz / 8 = 1MHz
-  REG_SET_VAL(pRCC->PLLCFGR, VCO_IN, 0x3Fu, RCC_PLLCFGR_PLLM_Pos);
+  REG_SET_VAL(pRCC->PLLCFGR, PLLM_VALUE, 0x3Fu, RCC_PLLCFGR_PLLM_Pos);
 
 #ifdef OVERDRIVE
   // --- 180MHz PLL Configuration ---
@@ -390,49 +395,8 @@ uint8 SysClock_Setup(void)
  */
 void SysClock_UpdateSystemCoreClock(void)
 {
-  uint32 pllm = 0, plln = 0, pllp = 0;
-  uint32 sysclk = 0;
-  uint32 src = 0;
-
-  /* Get SYSCLK source */
-  src = RCC->CFGR & RCC_CFGR_SWS;
-
-  switch (src) {
-    case 0x00:  // HSI used as system clock source
-      sysclk = HSI_VALUE;
-      break;
-    case 0x04:  // HSE used as system clock source
-      sysclk = HSE_VALUE;
-      break;
-    case 0x08:  // PLL used as system clock source
-      /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLLM) * PLLN
-         SYSCLK = PLL_VCO / PLLP */
-      pllm = RCC->PLLCFGR & RCC_PLLCFGR_PLLM;
-      plln = (RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> 6;
-      pllp = (((RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >> 16) + 1) * 2;
-      
-      if (RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC) {
-        /* HSE used as PLL clock source */
-        sysclk = (HSE_VALUE / pllm) * plln / pllp;
-      } else {
-        /* HSI used as PLL clock source */
-        sysclk = (HSI_VALUE / pllm) * plln / pllp;
-      }
-      break;
-    default:
-      sysclk = HSI_VALUE;
-      break;
-  }
-
-  /* HCLK = SYSCLK / AHB prescaler */
-  uint32 ahbpre = (RCC->CFGR & RCC_CFGR_HPRE) >> 4;
-  if (ahbpre & 0x08) {
-    ahbpre = (0x10U << (ahbpre & 0x07)) >> 1;
-    sysclk /= ahbpre;
-  }
-
-  /* Update SystemCoreClock global variable */
-  SystemCoreClock = sysclk;
+  /* Update SystemCoreClock global variable (HCLK = SYSCLK / AHB prescaler) */
+  SystemCoreClock = SysClock_GetHCLK();
 }
 
 /**
