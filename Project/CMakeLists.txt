@@ -72,6 +72,7 @@ platform_add_module(
   INCLUDES 04_MCAL/SystemClock/Include
   DEPENDS utilities
   PRIVATE_DEPENDS cmsis)
+target_compile_definitions(mcal_sysclock PRIVATE ${BOARD_SYSCLOCK_DEFINITIONS})
 
 platform_add_module(
   mcal_syscfgctrl

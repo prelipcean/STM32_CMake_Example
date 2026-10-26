@@ -43,5 +43,6 @@
   // Cortex-Debug: arm-none-eabi-gdb and openocd are taken from PATH. If they
   // are not on PATH set "cortex-debug.armToolchainPath" and
   // "cortex-debug.openocdPath" in your *user* settings (machine specific).
-  "cortex-debug.variableUseNaturalFormat": false
+  "cortex-debug.variableUseNaturalFormat": false,
+  "terminal.integrated.stickyScroll.enabled": false
 }

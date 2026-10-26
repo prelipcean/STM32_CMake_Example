@@ -9,7 +9,7 @@ don't start from scratch.
 
 - **Layered architecture**: Application → VFB → Middleware/BSP → MCAL, each module
   a separate CMake target that only sees the headers it depends on
-- **Clock configuration**: HSE + PLL, 168MHz (180MHz with `OVERDRIVE`)
+- **Clock configuration**: HSE + PLL, 168MHz (180MHz with Over-Drive, `-DSYSCLOCK_OVERDRIVE=ON`)
 - **Drivers**: FPU, NVIC, SYSCFG, GPIO (incl. EXTI), USART (polling + RX interrupt)
 - **Cross-platform build**: Windows, Linux and macOS with the same commands (CMake presets)
 - **Unit tests** on the host with [Unity](https://github.com/ThrowTheSwitch/Unity)
@@ -55,6 +55,20 @@ cmake --build --preset debug
 cmake --preset host-tests
 cmake --build --preset host-tests
 ctest --preset host-tests
+```
+
+### Build options
+
+| CMake option | Default | Effect |
+|---|---|---|
+| `SYSCLOCK_OVERDRIVE` | `OFF` | `ON`: SYSCLK 180MHz (Voltage Scale 1 + Over-Drive), APB1/APB2 45/90MHz. The PLL48 clock (USB/SDIO) becomes 45MHz. `OFF`: 168MHz, APB1/APB2 42/84MHz, PLL48 = 48MHz. |
+| `PLATFORM_BOARD` | `STM32F429ZI` | Board file in `cmake/boards/` |
+
+Use the `debug-180mhz` preset, or add the option to any preset:
+
+```bash
+cmake --preset debug-180mhz && cmake --build --preset debug-180mhz
+cmake --preset release -DSYSCLOCK_OVERDRIVE=ON
 ```
 
 Outputs are in `build/<preset>/`:
