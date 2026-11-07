@@ -181,7 +181,7 @@ set `STM32_SVD_DIR` to the folder containing `STM32F429.svd`.
 │   ├── CMakeLists.txt          # Module list, layer by layer
 │   ├── 01_Application/         # main.c, software components (SWC_*)
 │   ├── 02_VFB/                 # Virtual function bus (SWC <-> BSP mapping)
-│   ├── 03_Middleware/          # BSP (board, startup, linker), CDD, OS
+│   ├── 03_Middleware/          # BSP (board, startup, linker), Runtime, Debounce, CDD, OS
 │   ├── 04_MCAL/                # CMSIS + register-level drivers
 │   ├── XX_Libraries/           # Third party libraries
 │   └── YY_Utilities/           # std_types, platform_types, reg_util
@@ -210,7 +210,8 @@ platform_add_module(
 ```
 
 It is linked into the firmware automatically. Use the files in `Templates/` for
-new sources/headers.
+new sources/headers, and fill in every `@brief`/`@details`/`@note` banner -
+Doxygen warns on anything left blank (see *Documentation* below).
 
 **New board** - add `cmake/boards/<BOARD>.cmake` (see `STM32F429ZI.cmake`) and
 configure with `-DPLATFORM_BOARD=<BOARD>`.
@@ -222,6 +223,30 @@ register it in `Tests/UnitTest/CMakeLists.txt`:
 add_unit_test(test_<name> ${CMAKE_CURRENT_SOURCE_DIR}/test_<name>.c
               <production sources under test>...)
 ```
+
+See `Tests/UnitTest/README.md` for the mocking convention (fake the layer
+directly below the thing you're testing).
+
+**Worked example** - `Project/03_Middleware/Debounce/` (`svc_debounce`) and its
+test, `Tests/UnitTest/test_debounce.c`, show the full loop end to end: a
+template-based module with filled-in Doxygen comments, registered in
+`Project/CMakeLists.txt`, and a host-native Unity test that fakes
+`GPIO_ReadPin()` to drive it through glitch rejection, press/release timing,
+and a millis-counter wraparound - start there when adding your own module.
+
+## Documentation
+
+API docs are generated with [Doxygen](https://www.doxygen.nl/) from the comment
+banners in `Project/`:
+
+```bash
+doxygen Documentation/SWDD_Doxygen/Doxyfile
+```
+
+Output is `Documentation/SWDD_Doxygen/html/index.html` (git-ignored - generate
+it locally, don't commit it). The run also prints a warning for every
+undocumented public symbol (`WARN_IF_UNDOCUMENTED`), which doubles as a
+to-do list for backfilling comment banners as you add modules.
 
 ## Code Style
 

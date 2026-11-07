@@ -1,10 +1,22 @@
 /******************************************************************************
  * @file                usart1_bsp.h
- * @brief               
+ * @brief               BSP: USART1 on PA9 (Tx)/PA10 (Rx), AF7 - the ST-LINK/V2-B
+ *                      virtual COM port on the STM32F429I-DISC1.
  *
- * @details             
+ * @details             Binds the generic MCAL USART and GPIO drivers to this
+ *                      specific peripheral instance and pin assignment.
+ *                      USART1_Init()/USART1_It_Init() configure the pins and
+ *                      peripheral for polling or interrupt-driven reception;
+ *                      USART1_ReadByte() pops one byte from the ISR-filled ring
+ *                      buffer (non-blocking); USART1_TransmitData()/
+ *                      USART1_ReceiveData() wrap the blocking MCAL calls;
+ *                      USART1_PollingDemo() is a minimal one-byte echo demo.
  *
- * @note                
+ * @note                Use either the polling pair (USART1_Init +
+ *                      USART1_ReceiveData/TransmitData) or the interrupt pair
+ *                      (USART1_It_Init + USART1_ReadByte) - not both; the RX
+ *                      ring buffer is only fed once USART1_It_Init() has
+ *                      enabled the interrupt.
  ******************************************************************************/
 
 #ifndef USART1_BSP_H_

@@ -48,6 +48,9 @@ Thumbs.db
 # Flash backups made with tools/stm32_probe.py (board tasks)
 backups/
 
+# Generated Doxygen output (doxygen Documentation/SWDD_Doxygen/Doxyfile)
+Documentation/SWDD_Doxygen/html/
+
 # Python bytecode (tools/)
 __pycache__/
 *.pyc

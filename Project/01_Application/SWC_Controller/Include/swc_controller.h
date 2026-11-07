@@ -1,10 +1,16 @@
 /******************************************************************************
  * @file                swc_controller.h
- * @brief               
+ * @brief               Application: UART command controller (vim-style H/J/K/L demo).
  *
- * @details             
+ * @details             Reads bytes received on USART1 (via the VFB indirection
+ *                      layer) and replies with LEFT/DOWN/UP/RIGHT to the H/J/K/L
+ *                      commands (case-insensitive); any other received byte is
+ *                      echoed back unchanged. Driven from the main loop by
+ *                      calling Controller_Runnable() each iteration.
  *
- * @note                
+ * @note                Call Controller_Init() once (enables the USART1 RX
+ *                      interrupt via the VFB layer) before the first call to
+ *                      Controller_Runnable().
  ******************************************************************************/
 
 #ifndef SWC_CONTROLLER_H_
@@ -19,7 +25,6 @@ extern "C"
  * INCLUDES
  * List of required header files
  ******************************************************************************/
-
 
 /******************************************************************************
  * MACRO DEFINITIONS

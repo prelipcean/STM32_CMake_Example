@@ -1,0 +1,69 @@
+# Doxyfile for STM32_CMake_Example
+#
+# Hand-written, not `doxygen -g` output: every key below is one we actually
+# care about; anything omitted keeps Doxygen's built-in default for that key.
+#
+# All relative paths below (INPUT, EXCLUDE, OUTPUT_DIRECTORY, ...) are
+# relative to the CURRENT WORKING DIRECTORY at invocation, not to this
+# Doxyfile's own location - that's Doxygen's actual resolution rule, verified
+# by running it. Always run from the repo root:
+#
+#   doxygen Documentation/SWDD_Doxygen/Doxyfile
+#
+# Output lands in Documentation/SWDD_Doxygen/html/index.html (git-ignored).
+
+#---------------------------------------------------------------------------
+# Project
+#---------------------------------------------------------------------------
+DOXYFILE_ENCODING      = UTF-8
+PROJECT_NAME           = "STM32 CMake Example Platform"
+PROJECT_BRIEF          = "Layered, portable, unit-tested STM32 firmware platform"
+OUTPUT_DIRECTORY       = Documentation/SWDD_Doxygen
+STRIP_FROM_PATH        = .
+TAB_SIZE               = 2
+
+# This is a C codebase (AUTOSAR-ish typedefs/structs, not C++ classes) -
+# tunes terminology and member grouping in the generated output accordingly.
+OPTIMIZE_OUTPUT_FOR_C  = YES
+
+#---------------------------------------------------------------------------
+# Input
+#---------------------------------------------------------------------------
+# README.md must be listed here (not just set as the main page) or Doxygen
+# never reads it.
+INPUT                  = README.md \
+                          Project
+USE_MDFILE_AS_MAINPAGE = README.md
+RECURSIVE              = YES
+
+# Vendor CMSIS headers aren't ours to document.
+EXCLUDE                = Project/04_MCAL/CMSIS
+
+#---------------------------------------------------------------------------
+# Diagnostics
+#---------------------------------------------------------------------------
+# Surface undocumented public API as build warnings instead of silently
+# producing thin pages - this is the signal that tells you what's still
+# left to document (see e.g. the three headers backfilled alongside this
+# Doxyfile: swc_controller.h, vfb_swc_controller.h, usart1_bsp.h).
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_INCOMPLETE_DOC = YES
+WARN_NO_PARAMDOC       = YES
+
+#---------------------------------------------------------------------------
+# Output
+#---------------------------------------------------------------------------
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+GENERATE_TREEVIEW      = YES
+SOURCE_BROWSER         = YES
+
+#---------------------------------------------------------------------------
+# Graphs (dot, from the `graphviz` package)
+#---------------------------------------------------------------------------
+HAVE_DOT               = YES
+COLLABORATION_GRAPH    = YES
+INCLUDE_GRAPH          = YES
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+DOT_IMAGE_FORMAT       = svg

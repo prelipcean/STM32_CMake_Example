@@ -1,10 +1,17 @@
 /******************************************************************************
- * @file                vfb_controller.h
- * @brief
+ * @file                vfb_swc_controller.h
+ * @brief               Virtual Function Bus (VFB) binding SWC_Controller to USART1.
  *
- * @details
+ * @details             Indirection layer between the Application layer
+ *                      (SWC_Controller) and the Middleware/BSP layer
+ *                      (usart1_bsp). The application calls the hardware-agnostic
+ *                      VFB_USART1_* macros; today they forward 1:1 to the
+ *                      USART1_* BSP functions, but a different board/BSP
+ *                      binding could redefine them without the application
+ *                      changing - that indirection is this file's only job.
  *
- * @note
+ * @note                This is the generated binding for SWC_Controller; see
+ *                      Project/02_VFB/Generated for the full set of bindings.
  ******************************************************************************/
 
 #ifndef VFB_CONTROLLER_H_
@@ -34,7 +41,6 @@ extern "C"
 #define VFB_USART1_ReadByte(data)           USART1_ReadByte(data)
 
 #define VFB_USART1_PollingDemo()            USART1_PollingDemo()
-
 
 /******************************************************************************
  * TYPE DEFINITIONS

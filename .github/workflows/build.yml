@@ -66,3 +66,54 @@ jobs:
 
       - name: Test
         run: ctest --preset host-tests
+
+  docs:
+    name: Docs (Doxygen)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Doxygen and Graphviz
+        run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
+
+      - name: Generate
+        run: doxygen Documentation/SWDD_Doxygen/Doxyfile
+
+      - name: Upload docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: doxygen-html
+          path: Documentation/SWDD_Doxygen/html
+
+  lint:
+    name: Lint (clang-format)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # apt's clang-format may not exactly match the version contributors run
+      # locally (.clang-format targets a recent Clang release) - if this check
+      # and your local `clang-format --dry-run` disagree, trust your local one
+      # and pin a matching version here.
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+
+      # Scoped to files this push/PR actually touched, not the whole tree:
+      # most of the pre-existing codebase (including vendor CMSIS headers,
+      # which must never be reformatted) isn't clang-format-clean under the
+      # currently installed clang-format. Retroactively reformatting all of
+      # that is a separate, much bigger decision than "add a lint check" -
+      # this gate only holds new/changed code to the standard going forward.
+      - name: Check formatting of changed files
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          git diff --name-only --diff-filter=ACMR "$BASE" -- '*.c' '*.h' \
+            | grep -v '^Project/04_MCAL/CMSIS/' > /tmp/changed.txt || true
+          if [ -s /tmp/changed.txt ]; then
+            cat /tmp/changed.txt
+            xargs clang-format --dry-run -Werror < /tmp/changed.txt
+          else
+            echo "No changed C/H files to check."
+          fi

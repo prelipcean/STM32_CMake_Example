@@ -20,3 +20,12 @@ target_include_directories(
 # Runtime measurement: CPU load calculation (header only part)
 add_unit_test(test_runtime ${CMAKE_CURRENT_SOURCE_DIR}/test_runtime.c)
 target_include_directories(test_runtime PRIVATE ${PROJECT_SOURCE_DIR}/Project/03_Middleware/Runtime/Include)
+
+# Debounce: time-based filtering of one GPIO input, with GPIO_ReadPin() faked
+add_unit_test(
+  test_debounce ${CMAKE_CURRENT_SOURCE_DIR}/test_debounce.c
+  ${PROJECT_SOURCE_DIR}/Project/03_Middleware/Debounce/Source/debounce.c)
+target_include_directories(
+  test_debounce
+  PRIVATE ${PROJECT_SOURCE_DIR}/Project/03_Middleware/Debounce/Include
+          ${PROJECT_SOURCE_DIR}/Project/04_MCAL/GPIO/Include)

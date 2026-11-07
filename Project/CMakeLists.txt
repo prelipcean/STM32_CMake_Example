@@ -51,6 +51,12 @@ platform_add_module(
   DEPENDS utilities
   PRIVATE_DEPENDS cmsis mcal_gpio mcal_usart)
 
+platform_add_module(
+  svc_debounce
+  SOURCES 03_Middleware/Debounce/Source/debounce.c
+  INCLUDES 03_Middleware/Debounce/Include
+  DEPENDS utilities mcal_gpio)
+
 # ===================================================================
 # 04_MCAL Layer
 # ===================================================================
