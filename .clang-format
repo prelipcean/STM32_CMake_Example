@@ -7,16 +7,12 @@ AlignConsecutiveAssignments:
   AcrossEmptyLines: true
   AcrossComments:  true
   AlignCompound:   false
-  AlignFunctionDeclarations: false
-  AlignFunctionPointers: false
   PadOperators:    true
 AlignConsecutiveBitFields:
   Enabled:         true
   AcrossEmptyLines: true
   AcrossComments:  true
   AlignCompound:   false
-  AlignFunctionDeclarations: false
-  AlignFunctionPointers: false
   PadOperators:    false
 AlignConsecutiveDeclarations:
   Enabled:         false
@@ -31,8 +27,6 @@ AlignConsecutiveMacros:
   AcrossEmptyLines: true
   AcrossComments:  true
   AlignCompound:   false
-  AlignFunctionDeclarations: false
-  AlignFunctionPointers: false
   PadOperators:    false
 AlignConsecutiveShortCaseStatements:
   Enabled:         false
@@ -45,24 +39,18 @@ AlignConsecutiveTableGenBreakingDAGArgColons:
   AcrossEmptyLines: false
   AcrossComments:  false
   AlignCompound:   false
-  AlignFunctionDeclarations: false
-  AlignFunctionPointers: false
   PadOperators:    false
 AlignConsecutiveTableGenCondOperatorColons:
   Enabled:         false
   AcrossEmptyLines: false
   AcrossComments:  false
   AlignCompound:   false
-  AlignFunctionDeclarations: false
-  AlignFunctionPointers: false
   PadOperators:    false
 AlignConsecutiveTableGenDefinitionColons:
   Enabled:         false
   AcrossEmptyLines: false
   AcrossComments:  false
   AlignCompound:   false
-  AlignFunctionDeclarations: false
-  AlignFunctionPointers: false
   PadOperators:    false
 AlignEscapedNewlines: Right
 AlignOperands:   Align
